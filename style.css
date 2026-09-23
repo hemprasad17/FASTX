@@ -1,0 +1,230 @@
+/* 1. Global Reset & Font */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+  background-color: #f1f5f9; /* Light grey-blue background */
+  color: #1e293b;            /* Dark slate text */
+  padding: 24px;
+}
+
+/* 2. Header */
+header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+header h1 {
+  font-size: 1.9rem;
+  color: #0f172a;
+}
+
+header p {
+  color: #64748b;
+  margin-top: 4px;
+}
+
+/* 3. Main Layout & Cards */
+main {
+  max-width: 700px;
+  margin: 0 auto;           /* Centers everything on the screen */
+  display: flex;
+  flex-direction: column;
+  gap: 24px;                /* Space between sections */
+}
+
+section {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 12px;      /* Rounded corners */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08); /* Soft drop shadow */
+}
+
+section h2 {
+  font-size: 1.25rem;
+  margin-bottom: 16px;
+  color: #1e3a8a;           /* Deep blue accent */
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 8px;
+}
+
+/* 4. Form Styling */
+#match-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+#match-form div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #334155;
+}
+
+input {
+  padding: 10px 12px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+input:focus {
+  border-color: #2563eb;    /* Glows blue when clicked */
+}
+
+/* 5. Buttons */
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+button:active {
+  transform: scale(0.98);   /* Slight click press effect */
+}
+
+/* Submit Form Button */
+#match-form button {
+  background-color: #2563eb;
+  color: white;
+  padding: 12px;
+  font-size: 1rem;
+  margin-top: 8px;
+}
+
+#match-form button:hover {
+  background-color: #1d4ed8;
+}
+
+/* 6. Scoreboard Section */
+#scoreboard-card {
+  text-align: center;
+  background: #f8fafc;
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+#current-match-title {
+  font-size: 1.3rem;
+  margin-bottom: 6px;
+}
+
+.score-display {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 14px 0;
+}
+
+.score-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.score-controls button {
+  background-color: #0f172a;
+  color: white;
+  padding: 10px 16px;
+  font-size: 0.9rem;
+}
+
+.score-controls button:hover {
+  background-color: #334155;
+}
+
+/* Highlight the Wicket button with red */
+.score-controls button.wicket-btn {
+  background-color: #dc2626;
+}
+
+.score-controls button.wicket-btn:hover {
+  background-color: #b91c1c;
+} 
+/* Fixture Items */
+.fixture-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+}
+
+.badge {
+  background-color: #e0f2fe;
+  color: #0369a1;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  text-transform: uppercase;
+} 
+/* Chase Banner for 2nd Innings */
+.chase-banner {
+  background-color: #fef3c7; /* Warm light yellow */
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 14px;
+  color: #92400e;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-around;
+  font-size: 0.95rem;
+} 
+/* Stats Tables */
+.stats-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.match-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.match-table th, .match-table td {
+  padding: 8px 10px;
+  text-align: center;
+}
+
+.match-table th:first-child, .match-table td:first-child {
+  text-align: left;
+  font-weight: 600;
+}
+
+.match-table th {
+  background-color: #f1f5f9;
+  color: #475569;
+  font-weight: 700;
+  border-bottom: 1px solid #cbd5e1;
+}
+
+.match-table td {
+  border-bottom: 1px solid #f1f5f9;
+}

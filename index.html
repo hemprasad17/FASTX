@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tournament Match Tracker</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- App Header -->
+  <header>
+    <h1>🏆 Tournament Match Tracker</h1>
+    <p>Track fixtures, live scores, and match results</p>
+  </header>
+
+  <main>
+    <!-- Section 1: Form to Add a New Match -->
+    <section id="new-match-section">
+      <h2>Schedule / Add a Match</h2>
+      <form id="match-form">
+        <div>
+          <label for="team-a">Team 1 Name:</label>
+          <input type="text" id="team-a" placeholder="e.g., Challengers" required />
+        </div>
+
+        <div>
+          <label for="team-b">Team 2 Name:</label>
+          <input type="text" id="team-b" placeholder="e.g., Warriors" required />
+        </div>
+
+        <div>
+          <label for="match-overs">Total Overs:</label>
+          <input type="number" id="match-overs" min="1" max="50" value="10" required />
+        </div>
+
+        <div>
+          <label for="match-date">Match Date:</label>
+          <input type="date" id="match-date" required />
+        </div>
+
+        <button type="submit">Create Match Fixture</button>
+      </form>
+    </section>
+
+    <!-- Section 2: Active / Upcoming Fixtures List -->
+    <section id="fixtures-section">
+      <h2>Upcoming Fixtures</h2>
+      <div id="fixtures-list">
+        <p>No matches scheduled yet.</p>
+      </div>
+    </section>
+
+    <!-- Section 3: Live Scoreboard -->
+    <section id="scoreboard-section">
+      <h2>Live Scoreboard</h2>
+      <div id="scoreboard-card">
+        <h3 id="current-match-title">Challengers vs Warriors</h3>
+        <p><strong>Batting:</strong> <span id="batting-team">Challengers</span></p>
+
+        <!-- Current Score Display -->
+        <div class="score-display">
+          <span id="score-runs">0</span> / <span id="score-wickets">0</span>
+          <span style="font-size: 1.1rem; font-weight: normal; color: #64748b;">
+            (<span id="score-overs">0.0</span> ov)
+          </span>
+        </div>
+
+        <!-- 2nd Innings Target / Required Run Rate Bar (hidden initially) -->
+        <div id="chase-info" class="chase-banner" style="display: none;">
+          <p id="target-text">Target: 0</p>
+          <p id="required-text">Need 0 runs in 0 balls</p>
+        </div>
+
+        <!-- NEW: Player Stats Tables (Batting & Bowling) -->
+        <div class="stats-container">
+          <!-- Batting Table -->
+          <table class="match-table" id="batting-table">
+            <thead>
+              <tr>
+                <th>Batter</th>
+                <th>R</th>
+                <th>B</th>
+                <th>4s</th>
+                <th>6s</th>
+                <th>SR</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr id="row-striker">
+                <td><span id="name-striker">Batter 1</span> 🏏</td>
+                <td id="r-striker">0</td>
+                <td id="b-striker">0</td>
+                <td id="f-striker">0</td>
+                <td id="s-striker">0</td>
+                <td id="sr-striker">0.0</td>
+              </tr>
+              <tr id="row-non-striker">
+                <td><span id="name-non-striker">Batter 2</span></td>
+                <td id="r-non-striker">0</td>
+                <td id="b-non-striker">0</td>
+                <td id="f-non-striker">0</td>
+                <td id="s-non-striker">0</td>
+                <td id="sr-non-striker">0.0</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Bowler Table -->
+          <table class="match-table" id="bowling-table">
+            <thead>
+              <tr>
+                <th>Bowler</th>
+                <th>O</th>
+                <th>R</th>
+                <th>W</th>
+                <th>Econ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span id="name-bowler">Bowler</span> ⚾</td>
+                <td id="o-bowler">0.0</td>
+                <td id="r-bowler">0</td>
+                <td id="w-bowler">0</td>
+                <td id="econ-bowler">0.0</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Score Control Buttons -->
+        <div class="score-controls">
+          <button type="button" id="btn-swap-strike" style="background-color: #475569;">Swap Strike ⇄</button>
+          <button type="button" id="btn-dot">Dot (0)</button>
+          <button type="button" id="btn-one">+1 Run</button>
+          <button type="button" id="btn-four">+4</button>
+          <button type="button" id="btn-six">+6</button>
+          <button type="button" id="btn-wicket" class="wicket-btn">Wicket</button>
+          <button type="button" id="btn-extra">Extra (Wide/NB)</button>
+          <button type="button" id="btn-end-innings" style="background-color: #0284c7;">End 1st Innings</button>
+          <button type="button" id="btn-reset" style="background-color: #64748b;">Reset Match</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Link to JavaScript at the very end of body -->
+  <script src="script.js"></script>
+</body>
+</html>
