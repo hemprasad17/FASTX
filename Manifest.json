@@ -1,0 +1,21 @@
+{
+  "name": "Cricket Arena PRO",
+  "short_name": "CricketArena",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#090d16",
+  "theme_color": "#090d16",
+  "description": "Grassroots Cricket Broadcast Scorer & Live Commentary Console",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/861/861512.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/861/861512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
