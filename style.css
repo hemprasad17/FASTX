@@ -1,230 +1,961 @@
-/* 1. Global Reset & Font */
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg-dark: #0a0f1d;
+  --panel-bg: #111a2e;
+  --card-bg: #16223b;
+  --panel-border: #1e2e4f;
+  --accent-cyan: #06b6d4;
+  --accent-blue: #3b82f6;
+  --accent-green: #10b981;
+  --accent-red: #ef4444;
+  --accent-gold: #f59e0b;
+  --text-main: #f8fafc;
+  --text-dim: #94a3b8;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  background-color: #f1f5f9; /* Light grey-blue background */
-  color: #1e293b;            /* Dark slate text */
-  padding: 24px;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  padding-bottom: 60px;
 }
 
-/* 2. Header */
+/* Header */
 header {
+  background: linear-gradient(180deg, #0d1629 0%, #0a0f1d 100%);
+  border-bottom: 1px solid var(--panel-border);
+  padding: 24px 16px 18px;
   text-align: center;
-  margin-bottom: 28px;
+  position: relative;
 }
 
-header h1 {
-  font-size: 1.9rem;
-  color: #0f172a;
-}
-
-header p {
-  color: #64748b;
-  margin-top: 4px;
-}
-
-/* 3. Main Layout & Cards */
-main {
-  max-width: 700px;
-  margin: 0 auto;           /* Centers everything on the screen */
-  display: flex;
-  flex-direction: column;
-  gap: 24px;                /* Space between sections */
-}
-
-section {
-  background: #ffffff;
-  padding: 20px;
-  border-radius: 12px;      /* Rounded corners */
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08); /* Soft drop shadow */
-}
-
-section h2 {
-  font-size: 1.25rem;
-  margin-bottom: 16px;
-  color: #1e3a8a;           /* Deep blue accent */
-  border-bottom: 2px solid #e2e8f0;
-  padding-bottom: 8px;
-}
-
-/* 4. Form Styling */
-#match-form {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-#match-form div {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-label {
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: #334155;
-}
-
-input {
-  padding: 10px 12px;
-  border: 1.5px solid #cbd5e1;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  outline: none;
-}
-
-input:focus {
-  border-color: #2563eb;    /* Glows blue when clicked */
-}
-
-/* 5. Buttons */
-button {
-  cursor: pointer;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  transition: background 0.2s ease, transform 0.1s ease;
-}
-
-button:active {
-  transform: scale(0.98);   /* Slight click press effect */
-}
-
-/* Submit Form Button */
-#match-form button {
-  background-color: #2563eb;
-  color: white;
-  padding: 12px;
-  font-size: 1rem;
-  margin-top: 8px;
-}
-
-#match-form button:hover {
-  background-color: #1d4ed8;
-}
-
-/* 6. Scoreboard Section */
-#scoreboard-card {
-  text-align: center;
-  background: #f8fafc;
-  padding: 16px;
-  border-radius: 10px;
-  border: 1px solid #e2e8f0;
-}
-
-#current-match-title {
-  font-size: 1.3rem;
+.logo-badge {
+  display: inline-block;
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 2px;
+  font-weight: 800;
+  color: var(--accent-cyan);
+  background: rgba(6, 182, 212, 0.12);
+  border: 1px solid rgba(6, 182, 212, 0.35);
+  padding: 3px 12px;
+  border-radius: 9999px;
   margin-bottom: 6px;
 }
 
-.score-display {
-  font-size: 2.5rem;
+header h1 {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 2.2rem;
   font-weight: 800;
-  color: #0f172a;
-  margin: 14px 0;
+  letter-spacing: 1.5px;
+  color: #fff;
+  text-transform: uppercase;
 }
 
-.score-controls {
+header p {
+  color: var(--text-dim);
+  font-size: 0.88rem;
+  margin-top: 4px;
+}
+
+.sound-toggle-bar {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  align-items: center;
   justify-content: center;
+  gap: 10px;
+  margin-top: 12px;
 }
 
-.score-controls button {
-  background-color: #0f172a;
-  color: white;
-  padding: 10px 16px;
-  font-size: 0.9rem;
+/* Toggle Switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 38px;
+  height: 20px;
 }
-
-.score-controls button:hover {
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+  position: absolute; cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
   background-color: #334155;
+  transition: .3s;
+  border-radius: 20px;
+}
+.slider:before {
+  position: absolute; content: "";
+  height: 14px; width: 14px;
+  left: 3px; bottom: 3px;
+  background-color: white;
+  transition: .3s;
+  border-radius: 50%;
+}
+input:checked + .slider { background-color: var(--accent-cyan); }
+input:checked + .slider:before { transform: translateX(18px); }
+
+/* Main Content Container */
+main {
+  max-width: 960px;
+  margin: 20px auto;
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
-/* Highlight the Wicket button with red */
-.score-controls button.wicket-btn {
-  background-color: #dc2626;
+/* Sections & Cards */
+.section-badge {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: var(--accent-cyan);
+  margin-bottom: 6px;
 }
 
-.score-controls button.wicket-btn:hover {
-  background-color: #b91c1c;
-} 
-/* Fixture Items */
-.fixture-item {
+#scoreboard-card {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+}
+
+.match-meta {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 12px 16px;
-  margin-bottom: 10px;
+  border-bottom: 1px solid var(--panel-border);
+  padding-bottom: 12px;
+  margin-bottom: 14px;
 }
 
-.badge {
-  background-color: #e0f2fe;
-  color: #0369a1;
-  font-size: 0.75rem;
+.match-meta h3 {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 1.25rem;
   font-weight: 700;
-  padding: 4px 10px;
+  color: #fff;
+}
+
+.live-pill {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid #ef4444;
+  color: #f87171;
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 3px 10px;
   border-radius: 9999px;
-  text-transform: uppercase;
-} 
-/* Chase Banner for 2nd Innings */
-.chase-banner {
-  background-color: #fef3c7; /* Warm light yellow */
-  border: 1px solid #fde68a;
-  border-radius: 8px;
-  padding: 10px;
-  margin-bottom: 14px;
-  color: #92400e;
-  font-weight: 600;
-  display: flex;
-  justify-content: space-around;
+  letter-spacing: 1px;
+}
+
+.batting-lead {
   font-size: 0.95rem;
-} 
+  color: var(--text-dim);
+  margin-bottom: 6px;
+}
+
+.batting-lead strong {
+  color: #fff;
+  font-weight: 700;
+}
+
+/* Big Broadcast Score */
+.score-display {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 4rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+  margin: 10px 0 14px;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.score-divider {
+  color: var(--text-dim);
+  font-weight: 400;
+}
+
+.overs-badge {
+  font-size: 1.25rem;
+  color: var(--accent-cyan);
+  font-weight: 700;
+  margin-left: 10px;
+}
+
+/* Chase Banner */
+.chase-banner {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid var(--panel-border);
+  border-left: 4px solid var(--accent-gold);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.88rem;
+  color: #f8fafc;
+}
+
+/* Over Strip */
+.over-strip-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(10, 15, 29, 0.6);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  padding: 8px 14px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+}
+
+.strip-label {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.ball-strip {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.ball-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #1e293b;
+  border: 1px solid #334155;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.ball-circle.four { background: #2563eb; border-color: #3b82f6; }
+.ball-circle.six { background: #16a34a; border-color: #22c55e; }
+.ball-circle.wicket { background: #dc2626; border-color: #ef4444; }
+.ball-circle.extra { background: #d97706; border-color: #f59e0b; color: #000; }
+
 /* Stats Tables */
 .stats-container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin: 16px 0;
+  gap: 14px;
+  margin-bottom: 20px;
 }
 
 .match-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.88rem;
-  background: #ffffff;
-  border-radius: 8px;
+  background: rgba(10, 15, 29, 0.5);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
   overflow: hidden;
-  border: 1px solid #e2e8f0;
+  font-size: 0.88rem;
 }
 
 .match-table th, .match-table td {
-  padding: 8px 10px;
+  padding: 10px 14px;
   text-align: center;
 }
 
 .match-table th:first-child, .match-table td:first-child {
   text-align: left;
-  font-weight: 600;
 }
 
 .match-table th {
-  background-color: #f1f5f9;
-  color: #475569;
+  background: #141f36;
+  color: var(--text-dim);
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 0.78rem;
+  letter-spacing: 1px;
   font-weight: 700;
-  border-bottom: 1px solid #cbd5e1;
+  border-bottom: 1px solid var(--panel-border);
 }
 
-.match-table td {
-  border-bottom: 1px solid #f1f5f9;
+.match-table tbody tr {
+  border-bottom: 1px solid rgba(30, 46, 79, 0.4);
+}
+
+.match-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.clickable-name {
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.clickable-name:hover {
+  color: var(--accent-cyan);
+  text-decoration: underline;
+}
+
+/* Control Pad */
+.score-controls {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.btn-ctrl {
+  background: #18253f;
+  border: 1.5px solid #24355a;
+  color: #fff;
+  border-radius: 10px;
+  padding: 14px 6px;
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.btn-ctrl:hover {
+  background: #203154;
+  border-color: var(--accent-cyan);
+}
+
+.btn-ctrl:active {
+  transform: scale(0.96);
+}
+
+.four-btn {
+  background: rgba(37, 99, 235, 0.25);
+  border-color: #3b82f6;
+  color: #60a5fa;
+}
+
+.six-btn {
+  background: rgba(16, 185, 129, 0.25);
+  border-color: #10b981;
+  color: #34d399;
+}
+
+.wicket-btn {
+  background: rgba(220, 38, 38, 0.25);
+  border-color: #ef4444;
+  color: #f87171;
+}
+
+.extra-btn {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: #f59e0b;
+  color: #fbbf24;
+}
+
+.strike-btn {
+  background: #18253f;
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+.undo-btn {
+  background: #1e293b;
+  border-color: #475569;
+  color: #cbd5e1;
+}
+
+.innings-btn {
+  background: #0284c7;
+  border-color: #38bdf8;
+  color: #fff;
+}
+
+.reset-btn {
+  background: #1f2937;
+  border-color: #374151;
+  color: var(--text-dim);
+}
+
+.reset-btn:hover {
+  color: #f87171;
+  border-color: #ef4444;
+}
+
+/* WhatsApp Bar */
+.share-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.whatsapp-btn {
+  flex: 1;
+  background: #16a34a;
+  border: none;
+  color: #fff;
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: background 0.15s;
+}
+
+.whatsapp-btn:hover { background: #15803d; }
+
+/* Match History & Standings Sections */
+#history-section, #points-section {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+#history-section h2, #points-section h2 {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 14px;
+}
+
+.history-card-item {
+  background: #16223b;
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Modals */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(6px);
+  z-index: 1000;
+  padding: 16px;
+  overflow-y: auto;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 600px;
+  padding: 20px;
+  color: #fff;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--panel-border);
+  padding-bottom: 10px;
+  margin-bottom: 14px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.modal-btn {
+  background: #2563eb;
+  border-color: #3b82f6;
+  color: #fff;
+}
+
+/* Responsive Grid for Smaller Screens */
+@media (max-width: 640px) {
+  .score-controls {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .score-display {
+    font-size: 3rem;
+  }
+} 
+/* Navigation Tabs Bar */
+.nav-tab-strip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 0 12px;
+  border-bottom: 1px solid var(--panel-border);
+  margin-bottom: 16px;
+}
+
+.tab-nav-btn {
+  background: #141f36;
+  border: 1px solid var(--panel-border);
+  color: var(--text-dim);
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 9999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.tab-nav-btn.active {
+  background: rgba(6, 182, 212, 0.18);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.25);
+}
+
+/* Match Type Selector Chips */
+.type-chips-row {
+  display: flex;
+  gap: 8px;
+  margin: 6px 0 14px;
+  flex-wrap: wrap;
+}
+
+.type-chip {
+  background: #16223b;
+  border: 1.5px solid var(--panel-border);
+  color: #cbd5e1;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.type-chip.active {
+  border-color: var(--accent-cyan);
+  background: rgba(6, 182, 212, 0.2);
+  color: #fff;
+}
+
+/* Series Tracker Card */
+.series-banner-card {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.15), rgba(15, 23, 42, 0.6));
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+/* Fixtures List */
+.fixture-row {
+  background: #141f36;
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fixture-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fixture-tag {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+  width: fit-content;
+}
+
+.tag-friendly { background: #334155; color: #cbd5e1; }
+.tag-series { background: rgba(59, 130, 246, 0.25); color: #60a5fa; border: 1px solid #3b82f6; }
+.tag-tournament { background: rgba(245, 158, 11, 0.25); color: #fbbf24; border: 1px solid #f59e0b; }
+
+/* Leaderboards Cards */
+.leaderboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.leader-podium {
+  background: #141f36;
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.leader-podium h3 {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--panel-border);
+  padding-bottom: 6px;
+}
+
+.leader-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(30, 46, 79, 0.4);
+  font-size: 0.85rem;
+}
+
+.leader-row:last-child { border-bottom: none; } 
+/* User Profile Header Chip */
+.profile-pill-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid var(--panel-border);
+  padding: 4px 10px;
+  border-radius: 9999px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.profile-avatar-circle {
+  width: 24px;
+  height: 24px;
+  background: var(--accent-cyan);
+  color: #090d16;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+/* Squad Selection Chips in Modals */
+.squad-chip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 8px;
+  max-height: 280px;
+  overflow-y: auto;
+  margin: 12px 0;
+}
+
+.squad-select-chip {
+  background: #16223b;
+  border: 1px solid var(--panel-border);
+  color: #fff;
+  padding: 10px 8px;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.1s ease;
+}
+
+.squad-select-chip:hover {
+  border-color: var(--accent-cyan);
+  background: rgba(6, 182, 212, 0.15);
+}
+
+.squad-select-chip.disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Full Match Two-Innings Tabs in Scorecard Modal */
+.inn-tab-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--panel-border);
+  padding-bottom: 8px;
+}
+
+.inn-tab-btn {
+  background: #141f36;
+  border: 1px solid var(--panel-border);
+  color: var(--text-dim);
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.inn-tab-btn.active {
+  background: var(--accent-blue);
+  color: #fff;
+  border-color: #2563eb;
+}
+
+/* Settings Modal */
+.settings-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(30, 46, 79, 0.5);
+  font-size: 0.88rem;
+} 
+/* POTM Gold Hero Banner */
+.potm-broadcast-banner {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.22), rgba(217, 119, 6, 0.08));
+  border: 1.5px solid var(--accent-gold);
+  border-radius: 12px;
+  padding: 12px;
+  margin: 12px 0;
+  text-align: center;
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
+}
+
+.potm-gold-tag {
+  font-family: 'Chakra Petch', sans-serif;
+  color: var(--accent-gold);
+  font-size: 0.78rem;
+  letter-spacing: 1.5px;
+  font-weight: 800;
+}
+
+.potm-hero-name {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #fff;
+  font-family: 'Chakra Petch', sans-serif;
+  margin: 3px 0;
+}
+
+/* Match Poster Modal */
+.poster-preview-card {
+  background: radial-gradient(circle at 50% 30%, #1e293b 0%, #0a0f1d 100%);
+  border: 2px solid var(--accent-gold);
+  border-radius: 14px;
+  padding: 18px;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.poster-btn-download {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-family: 'Chakra Petch', sans-serif;
+  font-weight: 800;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-top: 12px;
+  width: 100%;
+} 
+/* Quick 1-Tap Launcher Modal */
+.launcher-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.selector-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.quick-chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.quick-chip {
+  background: #141f36;
+  border: 1.5px solid var(--panel-border);
+  color: #cbd5e1;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.quick-chip:hover {
+  border-color: var(--accent-cyan);
+}
+
+.quick-chip.active-t1 {
+  background: rgba(59, 130, 246, 0.25);
+  border-color: #3b82f6;
+  color: #60a5fa;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+}
+
+.quick-chip.active-t2 {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: #ef4444;
+  color: #f87171;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+}
+
+.quick-chip.active-opt {
+  background: rgba(6, 182, 212, 0.2);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+.toss-arena-box {
+  background: rgba(10, 15, 29, 0.75);
+  border: 1px dashed var(--panel-border);
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+}
+
+.coin-disc-3d {
+  width: 52px;
+  height: 52px;
+  background: radial-gradient(circle, #f59e0b, #b45309);
+  border: 2px solid #fbbf24;
+  border-radius: 50%;
+  margin: 0 auto 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #fff;
+  font-family: 'Chakra Petch', sans-serif;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+  transition: transform 0.6s cubic-bezier(0.4, 2, 0.6, 1);
+}
+
+.coin-disc-3d.flipping {
+  transform: rotateY(1080deg) scale(1.15);
+}
+
+.launch-now-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
+  transition: transform 0.1s;
+  width: 100%;
+  margin-top: 6px;
+}
+
+.launch-now-btn:active {
+  transform: scale(0.97);
+} 
+/* Broadcast Lower Third TV Banner */
+.tv-lower-third-overlay {
+  display: none;
+  background: linear-gradient(90deg, rgba(10, 15, 29, 0.96) 0%, rgba(20, 31, 54, 0.94) 50%, rgba(10, 15, 29, 0.96) 100%);
+  border-top: 2px solid var(--accent-cyan);
+  border-bottom: 2px solid var(--accent-gold);
+  border-radius: 12px;
+  padding: 10px 16px;
+  margin: 12px 0;
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.25);
+}
+
+.tv-banner-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 0.82rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 4px;
+  margin-bottom: 6px;
+}
+
+.tv-banner-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.tv-player-pill {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+}
+
+/* Manhattan Chart Container */
+.chart-box {
+  background: #0d1527;
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  padding: 8px;
+  text-align: center;
+}
+
+/* Timeline Drawer */
+.timeline-card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #16223b;
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  font-size: 0.82rem;
 }
