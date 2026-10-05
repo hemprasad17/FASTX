@@ -80,7 +80,7 @@ header {
   font-weight: 800;
 }
 
-/* Switch & Controls */
+/* Switch */
 .switch {
   position: relative;
   display: inline-block;
@@ -116,7 +116,7 @@ main {
   gap: 18px;
 }
 
-/* Navigation Tabs Bar */
+/* Navigation Tabs */
 .nav-tab-strip {
   display: flex;
   gap: 8px;
@@ -146,7 +146,7 @@ main {
   box-shadow: 0 0 10px rgba(6, 182, 212, 0.25);
 }
 
-/* Home Hub View */
+/* Home Hub */
 .home-hub-container {
   display: flex;
   flex-direction: column;
@@ -176,11 +176,6 @@ main {
   border-radius: 12px;
   padding: 14px;
   margin-bottom: 8px;
-  transition: transform 0.1s ease, border-color 0.15s ease;
-}
-
-.home-card:hover {
-  border-color: var(--accent-cyan);
 }
 
 .home-card.live-card {
@@ -315,7 +310,7 @@ main {
   font-size: 0.8rem;
   font-weight: 800;
   letter-spacing: 1px;
-  padding: 6px 12px;
+  padding: 8px 14px;
   border-radius: 8px;
   margin-bottom: 12px;
   display: flex;
@@ -427,7 +422,7 @@ main {
   text-decoration: underline;
 }
 
-/* Quota Pill & Fielder Badges */
+/* Quota Pill */
 .quota-tag {
   font-family: 'Chakra Petch', sans-serif;
   font-size: 0.72rem;
@@ -447,7 +442,7 @@ main {
   border-color: #ef4444;
 }
 
-/* Wicket Dismissal Modal Styling */
+/* Wicket Dismissal Grid */
 .wicket-option-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -522,20 +517,16 @@ main {
   cursor: pointer;
 }
 
-/* Modal Popup System with Clean Scroll Handling */
+/* Modals */
 .modal-overlay {
   display: none;
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(6px);
   z-index: 1000;
   padding: 20px 12px;
   overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
   align-items: flex-start;
   justify-content: center;
 }
@@ -554,7 +545,6 @@ main {
   position: relative;
 }
 
-/* Sticky Modal Header */
 .modal-header {
   position: sticky;
   top: 0;
@@ -581,21 +571,17 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s, color 0.15s;
 }
 
-.close-btn:hover {
-  background: #ef4444;
-  color: #fff;
-}
+.close-btn:hover { background: #ef4444; color: #fff; }
 
-/* QR Code Display Card */
+/* QR Container */
 .qr-container-box {
   background: #fff;
-  padding: 16px;
+  padding: 14px;
   border-radius: 12px;
   display: inline-block;
-  margin: 14px auto;
+  margin: 12px auto;
   box-shadow: 0 0 20px rgba(6, 182, 212, 0.35);
 }
 
@@ -611,7 +597,7 @@ main {
   text-align: center;
 }
 
-/* Multi-Step Wizard Flow */
+/* Wizard */
 .wizard-step-container {
   display: flex;
   flex-direction: column;
@@ -666,7 +652,6 @@ main {
   color: #000;
 }
 
-/* Squad Checklist in Setup */
 .squad-check-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
@@ -691,7 +676,6 @@ main {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: all 0.15s ease;
 }
 
 .squad-check-card.selected {
@@ -700,15 +684,9 @@ main {
   color: #34d399;
 }
 
-.squad-check-card:not(.selected) {
-  opacity: 0.6;
-}
+.squad-check-card:not(.selected) { opacity: 0.6; }
 
-.team-input-row {
-  display: flex;
-  gap: 8px;
-  margin-top: 6px;
-}
+.team-input-row { display: flex; gap: 8px; margin-top: 6px; }
 
 .custom-team-input {
   flex: 1;
@@ -722,7 +700,6 @@ main {
   border-radius: 8px;
 }
 
-/* Roster / Squad Selection Grid */
 .squad-chip-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
@@ -754,7 +731,6 @@ main {
   pointer-events: none;
 }
 
-/* Two-Innings Scorecard Tabs */
 .inn-tab-bar {
   display: flex;
   gap: 8px;
@@ -775,18 +751,9 @@ main {
   cursor: pointer;
 }
 
-.inn-tab-btn.active {
-  background: var(--accent-blue);
-  color: #fff;
-  border-color: #2563eb;
-}
+.inn-tab-btn.active { background: var(--accent-blue); color: #fff; border-color: #2563eb; }
 
-/* Master Launcher Modal */
-.launcher-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
+.launcher-grid { display: flex; flex-direction: column; gap: 14px; }
 
 .selector-label {
   font-size: 0.78rem;
@@ -797,11 +764,7 @@ main {
   display: block;
 }
 
-.quick-chip-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
+.quick-chip-group { display: flex; flex-wrap: wrap; gap: 8px; }
 
 .quick-chip {
   background: #141f36;
@@ -815,23 +778,9 @@ main {
   cursor: pointer;
 }
 
-.quick-chip.active-t1 {
-  background: rgba(59, 130, 246, 0.25);
-  border-color: #3b82f6;
-  color: #60a5fa;
-}
-
-.quick-chip.active-t2 {
-  background: rgba(239, 68, 68, 0.25);
-  border-color: #ef4444;
-  color: #f87171;
-}
-
-.quick-chip.active-opt {
-  background: rgba(6, 182, 212, 0.2);
-  border-color: var(--accent-cyan);
-  color: var(--accent-cyan);
-}
+.quick-chip.active-t1 { background: rgba(59, 130, 246, 0.25); border-color: #3b82f6; color: #60a5fa; }
+.quick-chip.active-t2 { background: rgba(239, 68, 68, 0.25); border-color: #ef4444; color: #f87171; }
+.quick-chip.active-opt { background: rgba(6, 182, 212, 0.2); border-color: var(--accent-cyan); color: var(--accent-cyan); }
 
 .toss-arena-box {
   background: rgba(10, 15, 29, 0.75);
@@ -873,7 +822,6 @@ main {
   width: 100%;
 }
 
-/* TV Overlay & POTM Banner */
 .tv-lower-third-overlay {
   display: none;
   background: linear-gradient(90deg, rgba(10, 15, 29, 0.96) 0%, rgba(20, 31, 54, 0.94) 50%, rgba(10, 15, 29, 0.96) 100%);
@@ -894,12 +842,7 @@ main {
   margin-bottom: 6px;
 }
 
-.tv-banner-content {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-}
+.tv-banner-content { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 
 .tv-player-pill {
   background: rgba(15, 23, 42, 0.8);
