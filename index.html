@@ -7,23 +7,26 @@
   <link rel="stylesheet" href="style.css" />
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#0a0f1d" />
+  <!-- PeerJS for Real-Time Peer-to-Peer Live Sync -->
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 </head>
 <body>
 
   <!-- Top App Header -->
   <header>
     <div style="display: flex; align-items: center; gap: 10px;">
-      <div class="logo-badge">PRO LIVE CONSOLE</div>
-      <div class="profile-pill-badge" onclick="openProfileModal()">
+      <div class="logo-badge" id="app-badge-title">PRO LIVE CONSOLE</div>
+      <div class="profile-pill-badge" id="header-profile-btn" onclick="openProfileModal()">
         <div class="profile-avatar-circle" id="header-avatar">H</div>
         <span id="header-profile-name">Hem Prasad</span>
       </div>
     </div>
     
     <div style="display: flex; align-items: center; gap: 8px;">
-      <button type="button" class="btn-ctrl four-btn" style="padding: 6px 14px; font-size: 0.82rem;" onclick="openMasterLauncherModal()">+ NEW MATCH / TOURNAMENT</button>
+      <button type="button" class="btn-ctrl" style="padding: 6px 12px; font-size: 0.8rem; background: rgba(16, 185, 129, 0.2); border-color: #10b981; color: #34d399;" onclick="openSpectatorModal()">📡 SPECTATOR</button>
+      <button type="button" id="header-new-btn" class="btn-ctrl four-btn" style="padding: 6px 14px; font-size: 0.82rem;" onclick="openMasterLauncherModal()">+ START NEW MATCH</button>
       <button type="button" class="btn-ctrl" style="padding: 6px 12px; font-size: 0.8rem;" onclick="toggleTvOverlay()">📺 TV</button>
-      <button type="button" class="btn-ctrl" style="padding: 6px 12px; font-size: 0.8rem;" onclick="openSettingsModal()">⚙️</button>
+      <button type="button" id="header-settings-btn" class="btn-ctrl" style="padding: 6px 12px; font-size: 0.8rem;" onclick="openSettingsModal()">⚙️</button>
       <div class="sound-toggle-bar" style="margin: 0;">
         <label class="switch">
           <input type="checkbox" id="voice-toggle" checked>
@@ -34,24 +37,59 @@
   </header>
 
   <main>
-    <!-- View Navigation Strip -->
-    <div class="nav-tab-strip">
-      <button type="button" class="tab-nav-btn active" onclick="switchMainView('scorer', this)">🔴 Live Console</button>
+    <!-- View Switcher Tabs -->
+    <div class="nav-tab-strip" id="main-nav-tabs">
+      <button type="button" class="tab-nav-btn active" onclick="switchMainView('home', this)">🏠 Matches Hub</button>
+      <button type="button" class="tab-nav-btn" onclick="switchMainView('scorer', this)">🔴 Live Scorer</button>
       <button type="button" class="tab-nav-btn" onclick="switchMainView('playing11', this)">📋 Playing 11</button>
-      <button type="button" class="tab-nav-btn" onclick="switchMainView('schedule', this)">📅 Fixtures</button>
       <button type="button" class="tab-nav-btn" onclick="switchMainView('leaderboard', this)">👑 Leaderboards</button>
       <button type="button" class="tab-nav-btn" onclick="switchMainView('standings', this)">🏆 Standings</button>
       <button type="button" class="tab-nav-btn" onclick="switchMainView('history', this)">📜 Match History</button>
     </div>
 
+    <!-- VIEW 0: MATCHES HOME HUB -->
+    <div id="view-home" class="view-panel">
+      <div class="home-hub-container">
+        <div>
+          <div class="home-section-header">
+            <span class="home-section-title">🔴 LIVE MATCHES</span>
+            <span style="font-size:0.75rem; color:var(--accent-green); font-weight:700;">ACTIVE NOW</span>
+          </div>
+          <div id="home-live-container"></div>
+        </div>
+
+        <div>
+          <div class="home-section-header">
+            <span class="home-section-title">📅 SCHEDULED MATCHES</span>
+            <button type="button" class="btn-ctrl" style="padding:3px 10px; font-size:0.75rem;" onclick="openMasterLauncherModal()">+ Schedule</button>
+          </div>
+          <div id="home-scheduled-container"></div>
+        </div>
+
+        <div>
+          <div class="home-section-header">
+            <span class="home-section-title">📜 RECENT MATCHES</span>
+            <span style="font-size:0.75rem; color:var(--text-dim); cursor:pointer;" onclick="switchMainView('history', document.querySelectorAll('.tab-nav-btn')[5])">View All ➔</span>
+          </div>
+          <div id="home-recent-container"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- VIEW 1: LIVE BROADCAST SCORER -->
-    <div id="view-scorer" class="view-panel">
-      <!-- Match Locking Warning -->
+    <div id="view-scorer" class="view-panel" style="display: none;">
+      <!-- Spectator Read-Only Mode Banner -->
+      <div id="spectator-live-banner" class="spectator-banner" style="display: none;">
+        <span>📡 LIVE SPECTATOR BROADCAST (REAL-TIME SYNC)</span>
+        <button type="button" class="btn-ctrl" style="padding: 2px 8px; font-size: 0.72rem; background: rgba(0,0,0,0.3); border:none; color:#fff;" onclick="exitSpectatorMode()">Exit</button>
+      </div>
+
+      <!-- Match Lock Warning -->
       <div id="match-locked-banner" style="display: none; background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; border-radius: 8px; padding: 6px 12px; margin-bottom: 12px; text-align: center; color: #f87171; font-size: 0.8rem; font-weight: 700;">
         🔒 Match is Locked! Scoring controls are protected.
       </div>
 
-      <!-- TV LOWER THIRD LIVE OVERLAY -->
+      <!-- TV LOWER THIRD OVERLAY -->
       <div id="tv-lower-third" class="tv-lower-third-overlay">
         <div class="tv-banner-top">
           <span style="color:var(--accent-cyan); font-weight:800;">LIVE BROADCAST OVERLAY</span>
@@ -70,17 +108,6 @@
         </div>
       </div>
 
-      <!-- Bilateral Series Banner -->
-      <div id="series-status-banner" class="series-banner-card" style="display: none;">
-        <div>
-          <span style="font-size: 0.72rem; color: var(--accent-cyan); font-weight: 800; font-family: 'Chakra Petch', sans-serif;">BILATERAL SERIES</span>
-          <h4 id="series-teams-headline" style="color: #fff; margin-top: 2px;">FCG Challengers vs Warriors</h4>
-        </div>
-        <div id="series-score-tally" style="font-family: 'Chakra Petch', sans-serif; font-weight: 800; font-size: 1rem; color: var(--accent-gold);">
-          Series: 0 - 0
-        </div>
-      </div>
-
       <!-- Live Scoreboard Card -->
       <section id="scoreboard-section">
         <div class="section-badge">MATCH CONSOLE</div>
@@ -96,33 +123,28 @@
 
           <p class="batting-lead">Batting: <strong id="batting-team">FCG Challengers</strong></p>
 
-          <!-- Big Broadcast Score -->
           <div class="score-display">
             <span id="score-runs">0</span><span class="score-divider">/</span><span id="score-wickets">0</span>
             <span class="overs-badge">(<span id="score-overs">0.0</span> ov)</span>
           </div>
 
-          <!-- Target Info -->
           <div id="chase-info" class="chase-banner" style="display: none;">
             <p id="target-text">Target: 0</p>
             <p id="required-text">Need 0 runs in 0 balls</p>
           </div>
 
-          <!-- PLAYER OF THE MATCH HERO BANNER -->
           <div id="potm-hero-card" class="potm-broadcast-banner" style="display: none;">
             <div class="potm-gold-tag">⭐ PLAYER OF THE MATCH</div>
             <div class="potm-hero-name" id="potm-winner-name">Player Name</div>
             <p style="font-size: 0.82rem; color: #cbd5e1;" id="potm-winner-desc">Impact stats</p>
-            <button type="button" class="btn-ctrl" style="padding: 4px 10px; font-size: 0.72rem; margin-top: 6px;" onclick="openPlayerSelectionModal('potmOverride')">Change MVP ✏️️</button>
+            <button type="button" id="potm-override-btn" class="btn-ctrl" style="padding: 4px 10px; font-size: 0.72rem; margin-top: 6px;" onclick="openPlayerSelectionModal('potmOverride')">Change MVP ✏️</button>
           </div>
 
-          <!-- Over Balls Strip -->
           <div class="over-strip-container">
             <span class="strip-label">THIS OVER</span>
             <div id="recent-balls" class="ball-strip"></div>
           </div>
 
-          <!-- Player Stats Tables -->
           <div class="stats-container">
             <!-- Batters -->
             <table class="match-table" id="batting-table">
@@ -156,7 +178,7 @@
               </tbody>
             </table>
 
-            <!-- Bowler Table -->
+            <!-- Bowler -->
             <table class="match-table" id="bowling-table">
               <thead>
                 <tr>
@@ -170,7 +192,10 @@
               </thead>
               <tbody>
                 <tr>
-                  <td><span id="name-bowler" class="clickable-name" onclick="openPlayerSelectionModal('bowler')">Bowler 1</span> ⚾</td>
+                  <td>
+                    <span id="name-bowler" class="clickable-name" onclick="openPlayerSelectionModal('bowler')">Bowler 1</span> ⚾
+                    <div id="bowler-quota-badge" class="quota-tag">Quota: 0.0/2 ov</div>
+                  </td>
                   <td id="o-bowler">0.0</td>
                   <td id="m-bowler">0</td>
                   <td id="r-bowler">0</td>
@@ -181,13 +206,13 @@
             </table>
           </div>
 
-          <!-- Control Keypad -->
-          <div class="score-controls">
+          <!-- Scoring Keypad -->
+          <div class="score-controls" id="scorer-keypad-panel">
             <button type="button" class="btn-ctrl score-action-btn" onclick="addRuns(0)">0</button>
             <button type="button" class="btn-ctrl score-action-btn" onclick="addRuns(1)">+1</button>
             <button type="button" class="btn-ctrl four-btn score-action-btn" onclick="addRuns(4)">+4</button>
             <button type="button" class="btn-ctrl six-btn score-action-btn" onclick="addRuns(6)">+6</button>
-            <button type="button" class="btn-ctrl wicket-btn score-action-btn" onclick="handleWicket()">WICKET</button>
+            <button type="button" class="btn-ctrl wicket-btn score-action-btn" onclick="openWicketModal()">WICKET</button>
             <button type="button" class="btn-ctrl extra-btn score-action-btn" onclick="handleExtra()">EXTRA</button>
             <button type="button" class="btn-ctrl strike-btn score-action-btn" onclick="manualSwapStrike()">SWAP ⇄</button>
             <button type="button" class="btn-ctrl undo-btn score-action-btn" onclick="handleUndo()">⎌ UNDO</button>
@@ -197,10 +222,11 @@
             <button type="button" class="btn-ctrl reset-btn score-action-btn" onclick="handleReset()">RESET</button>
           </div>
 
-          <!-- Share Suite & Poster Generator -->
+          <!-- Share Suite -->
           <div class="share-controls">
             <button type="button" class="whatsapp-btn" onclick="shareWhatsApp()">📲 WhatsApp Card</button>
             <button type="button" class="btn-ctrl four-btn" style="flex:1;" onclick="openPosterModal()">🖼️ Match Poster</button>
+            <button type="button" class="btn-ctrl modal-btn" id="spectator-viewcard-btn" style="display:none; flex:1;" onclick="openScorecardModal()">📊 Full Card</button>
           </div>
         </div>
       </section>
@@ -211,17 +237,14 @@
       <section style="background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 16px; padding: 20px;">
         <div class="section-badge">ROSTER MANAGER</div>
         <h2>Playing 11 Squad Management</h2>
-        <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 16px;">1-Click add & manage active rosters:</p>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top:14px;">
           <div>
-            <h4 id="team1-roster-header" style="color: var(--accent-cyan); font-family: 'Chakra Petch', sans-serif; font-size: 1rem; margin-bottom: 8px;">Team 1</h4>
+            <h4 id="team1-roster-header" style="color: var(--accent-cyan); font-family: 'Chakra Petch', sans-serif; margin-bottom: 8px;">Team 1</h4>
             <div id="team1-squad-chips" class="squad-chip-grid"></div>
             <button type="button" class="btn-ctrl" style="width: 100%; margin-top: 8px; font-size: 0.82rem;" onclick="addCustomPlayer(1)">+ Add Player</button>
           </div>
-
           <div>
-            <h4 id="team2-roster-header" style="color: var(--accent-gold); font-family: 'Chakra Petch', sans-serif; font-size: 1rem; margin-bottom: 8px;">Team 2</h4>
+            <h4 id="team2-roster-header" style="color: var(--accent-gold); font-family: 'Chakra Petch', sans-serif; margin-bottom: 8px;">Team 2</h4>
             <div id="team2-squad-chips" class="squad-chip-grid"></div>
             <button type="button" class="btn-ctrl" style="width: 100%; margin-top: 8px; font-size: 0.82rem;" onclick="addCustomPlayer(2)">+ Add Player</button>
           </div>
@@ -234,9 +257,7 @@
       <section style="background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 16px; padding: 20px;">
         <div class="section-badge">UPCOMING FIXTURES</div>
         <h2>Scheduled Fixtures</h2>
-        <div id="fixtures-list-container" style="margin-top: 14px;">
-          <p style="color:var(--text-dim); font-size:0.85rem;">No scheduled matches yet. Use '+ NEW MATCH / TOURNAMENT' to create one.</p>
-        </div>
+        <div id="fixtures-list-container" style="margin-top: 14px;"></div>
       </section>
     </div>
 
@@ -245,18 +266,15 @@
       <section style="background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 16px; padding: 20px;">
         <div class="section-badge">TOURNAMENT HONOURS</div>
         <h2>Tournament Leaderboard & Caps</h2>
-        
         <div class="leaderboard-grid">
           <div class="leader-podium">
             <h3 style="color: #f97316;">🧢 ORANGE CAP (Top Runs)</h3>
             <div id="orange-cap-list"></div>
           </div>
-
           <div class="leader-podium">
             <h3 style="color: #a855f7;">🟣 PURPLE CAP (Top Wickets)</h3>
             <div id="purple-cap-list"></div>
           </div>
-
           <div class="leader-podium">
             <h3 style="color: #10b981;">🚀 MAXIMUM SIXES KING</h3>
             <div id="sixes-king-list"></div>
@@ -273,14 +291,7 @@
         <div style="overflow-x: auto;">
           <table class="match-table" id="points-table">
             <thead>
-              <tr>
-                <th>TEAM</th>
-                <th>P</th>
-                <th>W</th>
-                <th>L</th>
-                <th>PTS</th>
-                <th>NRR</th>
-              </tr>
+              <tr><th>TEAM</th><th>P</th><th>W</th><th>L</th><th>PTS</th><th>NRR</th></tr>
             </thead>
             <tbody id="points-body"></tbody>
           </table>
@@ -293,25 +304,49 @@
       <section id="history-section">
         <div class="section-badge">SAVED MATCHES</div>
         <h2>Match History Archive</h2>
-        <div id="match-history-list">
-          <p style="color: var(--text-dim); font-size: 0.88rem;">No completed matches saved yet.</p>
-        </div>
+        <div id="match-history-list"></div>
       </section>
     </div>
   </main>
 
-  <!-- MASTER MATCH / TOURNAMENT LAUNCHER MODAL -->
-  <div id="master-launcher-modal" class="modal-overlay">
+  <!-- SPECTATOR QR CODE MODAL -->
+  <div id="spectator-modal" class="modal-overlay" onclick="handleBackdropClick(event, 'spectator-modal')">
+    <div class="modal-content" style="max-width: 440px; text-align: center;">
+      <div class="modal-header">
+        <h3 style="font-family:'Chakra Petch', sans-serif;">📡 Real-Time Spectator Sync</h3>
+        <button type="button" class="close-btn" onclick="closeSpectatorModal()">&times;</button>
+      </div>
+
+      <p style="font-size:0.82rem; color:var(--text-dim);">Scan this QR code from any phone to stream the live score over the cloud:</p>
+
+      <div class="qr-container-box" id="qr-box-target"></div>
+
+      <input type="text" id="spectator-link-input" class="qr-link-input" readonly />
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        <button type="button" class="btn-ctrl four-btn" style="flex:1;" onclick="copySpectatorLink()">📋 Copy Link</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MULTI-STEP LAUNCHER WIZARD -->
+  <div id="master-launcher-modal" class="modal-overlay" onclick="handleBackdropClick(event, 'master-launcher-modal')">
     <div class="modal-content" style="max-width: 580px;">
       <div class="modal-header">
-        <h3 style="font-family:'Chakra Petch', sans-serif;">🚀 Launch New Match / Tournament</h3>
+        <h3 id="wizard-main-title" style="font-family:'Chakra Petch', sans-serif;">🚀 Match Launcher Wizard</h3>
         <button type="button" class="close-btn" onclick="closeMasterLauncherModal()">&times;</button>
       </div>
 
-      <div class="launcher-grid">
-        <!-- Match Format -->
+      <div class="wizard-progress-bar">
+        <div class="wizard-step-indicator active" id="wz-ind-1">1</div>
+        <div class="wizard-step-indicator" id="wz-ind-2">2</div>
+        <div class="wizard-step-indicator" id="wz-ind-3">3</div>
+        <div class="wizard-step-indicator" id="wz-ind-4">4</div>
+      </div>
+
+      <!-- STEP 1 -->
+      <div id="wizard-pane-1" class="wizard-step-container">
         <div>
-          <span class="selector-label">1. Select Match Format:</span>
+          <span class="selector-label">Match Format:</span>
           <div class="quick-chip-group" id="launcher-format-chips">
             <span class="quick-chip" onclick="setLauncherFormat('Friendly', this)">⚡ Quick Friendly</span>
             <span class="quick-chip" onclick="setLauncherFormat('Series', this)">🏏 Bilateral Series</span>
@@ -319,21 +354,24 @@
           </div>
         </div>
 
-        <!-- Team 1 Selector -->
         <div>
-          <span class="selector-label" style="color: #60a5fa;">2. Select Team 1 (Batting First):</span>
+          <span class="selector-label" style="color: #60a5fa;">Team 1:</span>
           <div class="quick-chip-group" id="launcher-t1-chips"></div>
+          <div class="team-input-row">
+            <input type="text" id="custom-t1-input" class="custom-team-input" placeholder="Or type custom Team 1 name..." onchange="setCustomTeam(1, this.value)" />
+          </div>
         </div>
 
-        <!-- Team 2 Selector -->
         <div>
-          <span class="selector-label" style="color: #f87171;">3. Select Team 2 (Bowling First):</span>
+          <span class="selector-label" style="color: #f87171;">Team 2:</span>
           <div class="quick-chip-group" id="launcher-t2-chips"></div>
+          <div class="team-input-row">
+            <input type="text" id="custom-t2-input" class="custom-team-input" placeholder="Or type custom Team 2 name..." onchange="setCustomTeam(2, this.value)" />
+          </div>
         </div>
 
-        <!-- Overs Selector -->
         <div>
-          <span class="selector-label">4. Match Overs:</span>
+          <span class="selector-label">Match Overs:</span>
           <div class="quick-chip-group" id="launcher-overs-chips">
             <span class="quick-chip" onclick="setLauncherOvers(6, this)">6 Ov</span>
             <span class="quick-chip" onclick="setLauncherOvers(8, this)">8 Ov</span>
@@ -344,7 +382,6 @@
           </div>
         </div>
 
-        <!-- Coin Toss Arena -->
         <div class="toss-arena-box">
           <div id="launcher-coin" class="coin-disc-3d">₹</div>
           <div style="display: flex; justify-content: center; gap: 8px; margin-bottom: 8px;">
@@ -359,38 +396,113 @@
           </div>
         </div>
 
-        <!-- Action -->
-        <button type="button" class="launch-now-btn" onclick="executeMasterLaunch()">START MATCH NOW 🚀</button>
+        <div style="display:flex; gap:10px;">
+          <button type="button" class="btn-ctrl" style="flex:1; background:var(--accent-blue); border-color:#2563eb;" onclick="scheduleMatchFromLauncher()">📅 Add to Schedule</button>
+          <button type="button" class="launch-now-btn" style="flex:1.5; margin-top:0;" onclick="goToWizardStep(2)">Next: Select Playing XI ➔</button>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div id="wizard-pane-2" class="wizard-step-container" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span class="selector-label" id="wz-t1-title" style="color:var(--accent-cyan); font-size:0.95rem;">Select Team 1 Playing XI:</span>
+          <span id="wz-t1-count" style="font-size:0.8rem; color:var(--accent-green); font-weight:800;">11 Selected</span>
+        </div>
+        <div id="wz-t1-checklist" class="squad-check-grid"></div>
+        <div class="team-input-row">
+          <input type="text" id="wz-add-p1-input" class="custom-team-input" placeholder="Type player name..." />
+          <button type="button" class="btn-ctrl" style="padding:6px 14px; font-size:0.8rem;" onclick="addWizardCustomPlayer(1)">+ Add Player</button>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:10px;">
+          <button type="button" class="btn-ctrl" style="flex:1;" onclick="goToWizardStep(1)">⬅ Back</button>
+          <button type="button" class="launch-now-btn" style="flex:2; margin-top:0;" onclick="goToWizardStep(3)">Next: Team 2 XI ➔</button>
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div id="wizard-pane-3" class="wizard-step-container" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span class="selector-label" id="wz-t2-title" style="color:var(--accent-gold); font-size:0.95rem;">Select Team 2 Playing XI:</span>
+          <span id="wz-t2-count" style="font-size:0.8rem; color:var(--accent-green); font-weight:800;">11 Selected</span>
+        </div>
+        <div id="wz-t2-checklist" class="squad-check-grid"></div>
+        <div class="team-input-row">
+          <input type="text" id="wz-add-p2-input" class="custom-team-input" placeholder="Type player name..." />
+          <button type="button" class="btn-ctrl" style="padding:6px 14px; font-size:0.8rem;" onclick="addWizardCustomPlayer(2)">+ Add Player</button>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:10px;">
+          <button type="button" class="btn-ctrl" style="flex:1;" onclick="goToWizardStep(2)">⬅ Back</button>
+          <button type="button" class="launch-now-btn" style="flex:2; margin-top:0;" onclick="goToWizardStep(4)">Next: Pick Openers ➔</button>
+        </div>
+      </div>
+
+      <!-- STEP 4 -->
+      <div id="wizard-pane-4" class="wizard-step-container" style="display:none;">
+        <span class="selector-label" style="font-size:0.95rem; color:#fff;">Select Opening Batter & Bowler:</span>
+        <div>
+          <span class="selector-label" style="color:var(--accent-cyan);">1. Opening Striker (Batting):</span>
+          <div class="quick-chip-group" id="wz-striker-chips"></div>
+        </div>
+        <div>
+          <span class="selector-label" style="color:var(--accent-cyan);">2. Non-Striker (Batting):</span>
+          <div class="quick-chip-group" id="wz-nonstriker-chips"></div>
+        </div>
+        <div>
+          <span class="selector-label" style="color:var(--accent-gold);">3. Opening Bowler (Bowling):</span>
+          <div class="quick-chip-group" id="wz-bowler-chips"></div>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:12px;">
+          <button type="button" class="btn-ctrl" style="flex:1;" onclick="goToWizardStep(3)">⬅ Back</button>
+          <button type="button" class="launch-now-btn" style="flex:2; margin-top:0;" onclick="executeFinalMatchLaunch()">PLAY BALL 🚀</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- 1-CLICK PLAYER SELECTOR MODAL -->
-  <div id="player-select-modal" class="modal-overlay">
+  <!-- WICKET MODAL -->
+  <div id="wicket-modal" class="modal-overlay" onclick="handleBackdropClick(event, 'wicket-modal')">
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 style="font-family:'Chakra Petch', sans-serif;">How Was Batter Out?</h3>
+        <button type="button" class="close-btn" onclick="closeWicketModal()">&times;</button>
+      </div>
+      <div class="wicket-option-grid">
+        <button type="button" class="btn-ctrl" onclick="selectDismissalType('Bowled')">⚡ Bowled</button>
+        <button type="button" class="btn-ctrl four-btn" onclick="selectDismissalType('Caught')">🧤 Caught</button>
+        <button type="button" class="btn-ctrl extra-btn" onclick="selectDismissalType('Run Out')">🏃 Run Out</button>
+        <button type="button" class="btn-ctrl" onclick="selectDismissalType('LBW')">🦵 LBW</button>
+        <button type="button" class="btn-ctrl" onclick="selectDismissalType('Stumped')">🎯 Stumped</button>
+        <button type="button" class="btn-ctrl reset-btn" onclick="selectDismissalType('Hit Wicket')">💥 Hit Wicket</button>
+      </div>
+      <div id="fielder-tray" class="fielder-select-tray">
+        <span style="font-size:0.75rem; color:var(--text-dim); font-weight:700;">SELECT FIELDER / KEEPER:</span>
+        <div id="fielder-chips-container" class="squad-chip-grid" style="margin-top:8px; max-height:160px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLAYER SELECTOR MODAL -->
+  <div id="player-select-modal" class="modal-overlay" onclick="handleBackdropClick(event, 'player-select-modal')">
     <div class="modal-content">
       <div class="modal-header">
         <h3 id="player-select-title" style="font-family:'Chakra Petch', sans-serif;">Select Player</h3>
         <button type="button" class="close-btn" onclick="closePlayerSelectionModal()">&times;</button>
       </div>
-      <p style="font-size:0.8rem; color:var(--text-dim); margin-bottom:8px;">Tap player name to select:</p>
       <div id="player-chips-container" class="squad-chip-grid"></div>
     </div>
   </div>
 
-  <!-- COMPLETE 2-INNINGS SCORECARD MODAL (WITH MANHATTAN & WORM GRAPHS) -->
-  <div id="scorecard-modal" class="modal-overlay">
+  <!-- FULL SCORECARD MODAL -->
+  <div id="scorecard-modal" class="modal-overlay" onclick="handleBackdropClick(event, 'scorecard-modal')">
     <div class="modal-content" style="max-width: 780px;">
       <div class="modal-header">
         <h3 id="modal-match-headline" style="font-family:'Chakra Petch', sans-serif;">Full Match Scorecard</h3>
         <button type="button" class="close-btn" onclick="closeScorecardModal()">&times;</button>
       </div>
-
       <div class="inn-tab-bar">
         <button type="button" id="tab-inn-1-btn" class="inn-tab-btn active" onclick="switchScorecardInnings(1)">1st Innings</button>
         <button type="button" id="tab-inn-2-btn" class="inn-tab-btn" onclick="switchScorecardInnings(2)">2nd Innings</button>
       </div>
-
-      <!-- Innings 1 View -->
       <div id="inn-1-scorecard-view">
         <h4 id="inn-1-header" style="color: var(--accent-cyan); font-family: 'Chakra Petch', sans-serif; font-size: 0.95rem; margin-bottom: 8px;">1st Innings Batting</h4>
         <div style="overflow-x: auto;">
@@ -400,7 +512,6 @@
           </table>
         </div>
         <p style="margin: 8px 0; font-size: 0.8rem; color: var(--text-dim);" id="inn1-extras-txt">Extras: 0</p>
-        
         <h4 id="inn-1-bowl-header" style="color: var(--accent-gold); font-family: 'Chakra Petch', sans-serif; font-size: 0.95rem; margin: 14px 0 8px;">1st Innings Bowling</h4>
         <div style="overflow-x: auto;">
           <table class="match-table" id="inn1-bowling-table">
@@ -409,8 +520,6 @@
           </table>
         </div>
       </div>
-
-      <!-- Innings 2 View -->
       <div id="inn-2-scorecard-view" style="display: none;">
         <h4 id="inn-2-header" style="color: var(--accent-cyan); font-family: 'Chakra Petch', sans-serif; font-size: 0.95rem; margin-bottom: 8px;">2nd Innings Batting</h4>
         <div style="overflow-x: auto;">
@@ -420,7 +529,6 @@
           </table>
         </div>
         <p style="margin: 8px 0; font-size: 0.8rem; color: var(--text-dim);" id="inn2-extras-txt">Extras: 0</p>
-
         <h4 id="inn-2-bowl-header" style="color: var(--accent-gold); font-family: 'Chakra Petch', sans-serif; font-size: 0.95rem; margin: 14px 0 8px;">2nd Innings Bowling</h4>
         <div style="overflow-x: auto;">
           <table class="match-table" id="inn2-bowling-table">
@@ -429,8 +537,6 @@
           </table>
         </div>
       </div>
-
-      <!-- Visual Analytics Suite: Manhattan Graph & Worm Graph -->
       <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:14px; border-top:1px solid var(--panel-border); padding-top:12px;">
         <div class="chart-box">
           <span style="font-size:0.75rem; color:var(--text-dim); font-weight:700;">MANHATTAN (RUNS / OVER)</span><br/>
@@ -444,8 +550,8 @@
     </div>
   </div>
 
-  <!-- TIMELINE / BALL LOGS DRAWER -->
-  <div id="timeline-modal" class="modal-overlay">
+  <!-- TIMELINE / LOGS MODAL -->
+  <div id="timeline-modal" class="modal-overlay" onclick="handleBackdropClick(event, 'timeline-modal')">
     <div class="modal-content" style="max-width: 500px;">
       <div class="modal-header">
         <h3 style="font-family:'Chakra Petch', sans-serif;">Delivery Timeline & Log</h3>
@@ -455,54 +561,48 @@
     </div>
   </div>
 
-  <!-- MATCH POSTER MODAL -->
-  <div id="poster-modal" class="modal-overlay">
+  <!-- POSTER MODAL -->
+  <div id="poster-modal" class="modal-overlay" onclick="handleBackdropClick(event, 'poster-modal')">
     <div class="modal-content" style="max-width: 440px; text-align: center;">
       <div class="modal-header">
         <h3 style="font-family:'Chakra Petch', sans-serif;">Official Match Poster</h3>
         <button type="button" class="close-btn" onclick="closePosterModal()">&times;</button>
       </div>
-
       <div class="poster-preview-card" id="poster-capture-box">
         <div style="font-family:'Chakra Petch', sans-serif; font-size:0.75rem; letter-spacing:2px; color:var(--accent-cyan); font-weight:800;">PRO CRICKET ARENA MATCH RESULT</div>
         <h2 id="poster-teams-title" style="font-family:'Chakra Petch', sans-serif; font-size:1.3rem; margin:6px 0; color:#fff;">Challengers vs Warriors</h2>
         <div id="poster-result-badge" style="display:inline-block; background:rgba(16,185,129,0.2); border:1px solid #10b981; color:#34d399; font-weight:800; padding:4px 12px; border-radius:9999px; font-size:0.82rem; margin-bottom:12px;">Match Result</div>
-        
         <div style="background:#111a2e; border:1px solid var(--panel-border); border-radius:10px; padding:10px; text-align:left; font-size:0.8rem; margin-bottom:10px;">
           <p style="color:var(--text-dim);">⭐ Player of the Match:</p>
           <strong id="poster-potm-val" style="color:var(--accent-gold); font-size:1rem; font-family:'Chakra Petch', sans-serif;">Player Name</strong>
         </div>
-
         <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-dim); margin-top:8px;">
           <span id="poster-venue-val">Tumakuru Stadium</span>
           <span id="poster-date-val">Live Scored</span>
         </div>
       </div>
-
       <canvas id="poster-canvas" width="400" height="320" style="display:none;"></canvas>
       <button type="button" class="poster-btn-download" onclick="downloadPosterImage()">⬇️ Save Poster Image to Gallery</button>
     </div>
   </div>
 
   <!-- SETTINGS MODAL -->
-  <div id="settings-modal" class="modal-overlay">
+  <div id="settings-modal" class="modal-overlay" onclick="handleBackdropClick(event, 'settings-modal')">
     <div class="modal-content">
       <div class="modal-header">
         <h3 style="font-family:'Chakra Petch', sans-serif;">Scorer Settings</h3>
         <button type="button" class="close-btn" onclick="closeSettingsModal()">&times;</button>
       </div>
-
       <div class="settings-row">
         <div>
           <strong>Lock Live Match Scoring</strong>
-          <p style="font-size:0.75rem; color:var(--text-dim);">Prevent accidental taps and edits on the field</p>
+          <p style="font-size:0.75rem; color:var(--text-dim);">Prevent accidental taps on the field</p>
         </div>
         <label class="switch">
           <input type="checkbox" id="match-lock-toggle" onchange="toggleMatchLock(this.checked)">
           <span class="slider"></span>
         </label>
       </div>
-
       <div class="settings-row">
         <div>
           <strong>Clear All Cache & Reset App</strong>
@@ -514,23 +614,14 @@
   </div>
 
   <!-- USER PROFILE MODAL -->
-  <div id="profile-modal" class="modal-overlay">
+  <div id="profile-modal" class="modal-overlay" onclick="handleBackdropClick(event, 'profile-modal')">
     <div class="modal-content" style="text-align: center;">
       <div class="modal-header">
         <h3 style="font-family:'Chakra Petch', sans-serif;">User & Scorer Profile</h3>
         <button type="button" class="close-btn" onclick="closeProfileModal()">&times;</button>
       </div>
-
       <div class="profile-avatar-circle" style="width: 50px; height: 50px; font-size: 1.5rem; margin: 0 auto 10px;" id="modal-profile-avatar">H</div>
       <input type="text" id="profile-name-input" value="Hem Prasad" style="width:80%; text-align:center; background:#16223b; border:1px solid var(--panel-border); color:#fff; font-size:1.1rem; font-weight:700; padding:8px; border-radius:8px; margin-bottom:8px;" />
-      <p style="font-size:0.8rem; color:var(--text-dim);">Official Scorer & Tournament Organizer</p>
-
-      <div style="background:#16223b; border-radius:10px; padding:12px; margin:14px 0; text-align:left; font-size:0.82rem;">
-        <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Matches Scored:</span><strong id="prof-matches-count">0</strong></div>
-        <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Tournaments Managed:</span><strong>FCG Premier League</strong></div>
-        <div style="display:flex; justify-content:space-between;"><span>Location:</span><span>Tumakuru, Karnataka</span></div>
-      </div>
-
       <button type="button" class="btn-ctrl four-btn" style="width:100%;" onclick="saveUserProfile()">Save Profile</button>
     </div>
   </div>
@@ -550,13 +641,27 @@
       team2: "Warriors",
       overs: 10,
       tossWinner: "FCG Challengers",
-      tossDecision: "Bat"
+      tossDecision: "Bat",
+      team1FullSquad: [],
+      team2FullSquad: [],
+      team1SelectedXI: [],
+      team2SelectedXI: [],
+      striker: "",
+      nonStriker: "",
+      bowler: ""
     };
 
     var activeTargetRole = "";
     var isMatchLocked = false;
+    var isSpectatorMode = false;
     var overRunTracker = 0;
     var tvOverlayVisible = false;
+    var selectedDismissalKind = "Caught";
+
+    // P2P Live Sync Variables
+    var peer = null;
+    var hostPeerId = null;
+    var peerConnections = [];
 
     var gameState = {
       userProfile: { name: "Hem Prasad" },
@@ -599,6 +704,7 @@
     };
 
     function announceCommentary(text) {
+      if (isSpectatorMode) return;
       var voiceToggle = document.getElementById("voice-toggle");
       if (!voiceToggle || !voiceToggle.checked) return;
       if ('speechSynthesis' in window) {
@@ -612,9 +718,11 @@
     }
 
     function saveToStorage() {
+      if (isSpectatorMode) return;
       try {
         localStorage.setItem("cricketGameState", JSON.stringify(gameState));
       } catch (e) {}
+      broadcastLiveStateToPeers();
     }
 
     function loadFromStorage() {
@@ -642,20 +750,210 @@
       } catch (e) {}
     }
 
+    // --- REAL-TIME CLOUD PEER SYNC (PEERJS) ---
+    function initPeerNetwork() {
+      var params = new URLSearchParams(window.location.search);
+      var matchRoom = params.get("match");
+
+      if (matchRoom) {
+        // CLIENT SPECTATOR PHONE
+        isSpectatorMode = true;
+        enableSpectatorMode();
+        peer = new Peer();
+        peer.on('open', function(id) {
+          var conn = peer.connect(matchRoom);
+          conn.on('open', function() {
+            conn.send({ type: "REQUEST_SYNC" });
+          });
+          conn.on('data', function(data) {
+            if (data && data.state) {
+              gameState = data.state;
+              renderAll();
+            }
+          });
+        });
+      } else {
+        // SCORER / HOST PHONE
+        peer = new Peer();
+        peer.on('open', function(id) {
+          hostPeerId = id;
+        });
+        peer.on('connection', function(conn) {
+          peerConnections.push(conn);
+          conn.on('data', function(data) {
+            if (data && data.type === "REQUEST_SYNC") {
+              conn.send({ state: gameState });
+            }
+          });
+        });
+      }
+    }
+
+    function broadcastLiveStateToPeers() {
+      if (peerConnections.length > 0) {
+        peerConnections.forEach(function(conn) {
+          if (conn.open) {
+            conn.send({ state: gameState });
+          }
+        });
+      }
+    }
+
+    function openSpectatorModal() {
+      // Use live GitHub Pages URL or current online origin
+      var baseUrl = window.location.origin.includes("github.io") 
+        ? window.location.origin + window.location.pathname 
+        : "https://hemprasad17.github.io/FASTX/";
+
+      var shareUrl = baseUrl + "?match=" + (hostPeerId || "online");
+      document.getElementById("spectator-link-input").value = shareUrl;
+
+      var qrBox = document.getElementById("qr-box-target");
+      qrBox.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(shareUrl)}" width="180" height="180" alt="Spectator QR Code" style="display:block; border-radius:6px;" />`;
+
+      document.getElementById("spectator-modal").style.display = "flex";
+    }
+
+    function closeSpectatorModal() {
+      document.getElementById("spectator-modal").style.display = "none";
+    }
+
+    function copySpectatorLink() {
+      var inp = document.getElementById("spectator-link-input");
+      inp.select();
+      navigator.clipboard.writeText(inp.value).then(function() {
+        alert("Spectator match link copied to clipboard!");
+      });
+    }
+
+    function enableSpectatorMode() {
+      document.getElementById("spectator-live-banner").style.display = "flex";
+      document.getElementById("scorer-keypad-panel").style.display = "none";
+      document.getElementById("header-new-btn").style.display = "none";
+      document.getElementById("header-settings-btn").style.display = "none";
+      document.getElementById("header-profile-btn").style.display = "none";
+      document.getElementById("potm-override-btn").style.display = "none";
+      document.getElementById("spectator-viewcard-btn").style.display = "block";
+      document.getElementById("app-badge-title").textContent = "LIVE SPECTATOR ARENA";
+
+      document.querySelectorAll(".clickable-name").forEach(function(el) {
+        el.style.pointerEvents = "none";
+      });
+
+      switchMainView('scorer', document.querySelectorAll('.tab-nav-btn')[1]);
+    }
+
+    function exitSpectatorMode() {
+      var url = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, document.title, url);
+      location.reload();
+    }
+
     function switchMainView(viewId, btn) {
       document.querySelectorAll(".view-panel").forEach(function(p) { p.style.display = "none"; });
       document.querySelectorAll(".tab-nav-btn").forEach(function(b) { b.classList.remove("active"); });
       document.getElementById("view-" + viewId).style.display = "block";
-      btn.classList.add("active");
+      if (btn) btn.classList.add("active");
 
+      if (viewId === 'home') renderHomeHub();
       if (viewId === 'playing11') renderPlaying11View();
       if (viewId === 'leaderboard') renderLeaderboards();
       if (viewId === 'standings') renderPointsTable();
       if (viewId === 'history') renderMatchHistory();
-      if (viewId === 'schedule') renderFixturesList();
     }
 
-    // --- TV OVERLAY TOGGLE ---
+    function handleBackdropClick(event, modalId) {
+      if (event.target.id === modalId) {
+        document.getElementById(modalId).style.display = "none";
+      }
+    }
+
+    document.addEventListener("keydown", function(e) {
+      if (e.key === "Escape") {
+        document.querySelectorAll(".modal-overlay").forEach(function(m) {
+          m.style.display = "none";
+        });
+      }
+    });
+
+    function renderHomeHub() {
+      var liveContainer = document.getElementById("home-live-container");
+      var isLive = (gameState.totalLegalBalls > 0 || gameState.runs > 0) && !gameState.isMatchOver;
+      
+      if (isLive) {
+        var ovStr = Math.floor(gameState.totalLegalBalls / 6) + "." + (gameState.totalLegalBalls % 6);
+        var activeBatting = gameState.currentInnings === 1 ? gameState.currentTeam1 : gameState.currentTeam2;
+        liveContainer.innerHTML = `
+          <div class="home-card live-card">
+            <div class="home-card-header">
+              <span>🔴 LIVE • ${gameState.matchType.toUpperCase()} (${gameState.matchMaxOvers} Ov)</span>
+              <span>${gameState.venue || 'Tumakuru Ground'}</span>
+            </div>
+            <div class="home-card-body">
+              <div>
+                <div class="home-team-score-line">${activeBatting}: ${gameState.runs}/${gameState.wickets} (${ovStr} ov)</div>
+                <div class="home-card-meta">${gameState.striker.name} ${gameState.striker.runs}* • ${gameState.bowler.name} ${gameState.bowler.wickets}/${gameState.bowler.runsConceded}</div>
+              </div>
+              <button type="button" class="btn-ctrl four-btn" style="padding:8px 14px; font-size:0.85rem;" onclick="switchMainView('scorer', document.querySelectorAll('.tab-nav-btn')[1])">Resume ➔</button>
+            </div>
+          </div>
+        `;
+      } else {
+        liveContainer.innerHTML = `<p style="color:var(--text-dim); font-size:0.82rem; margin-bottom:8px;">No match in progress. Tap '+ START NEW MATCH' to begin.</p>`;
+      }
+
+      var schedContainer = document.getElementById("home-scheduled-container");
+      schedContainer.innerHTML = "";
+      if (!gameState.fixtures || gameState.fixtures.length === 0) {
+        schedContainer.innerHTML = `<p style="color:var(--text-dim); font-size:0.82rem; margin-bottom:8px;">No matches scheduled.</p>`;
+      } else {
+        gameState.fixtures.slice(0, 3).forEach(function(f, idx) {
+          var div = document.createElement("div");
+          div.className = "home-card";
+          div.innerHTML = `
+            <div class="home-card-header">
+              <span class="fixture-tag ${f.type === 'Friendly' ? 'tag-friendly' : (f.type === 'Series' ? 'tag-series' : 'tag-tournament')}">${f.type}</span>
+              <span>${f.date}</span>
+            </div>
+            <div class="home-card-body">
+              <div>
+                <strong style="color:#fff; font-size:0.95rem;">${f.t1} vs ${f.t2}</strong>
+                <div class="home-card-meta">${f.overs} Overs • ${f.venue}</div>
+              </div>
+              <button type="button" class="btn-ctrl" style="padding:6px 12px; font-size:0.8rem; background:var(--accent-blue);" onclick="launchFromFixture(${idx})">Start 🚀</button>
+            </div>
+          `;
+          schedContainer.appendChild(div);
+        });
+      }
+
+      var recentContainer = document.getElementById("home-recent-container");
+      recentContainer.innerHTML = "";
+      if (!gameState.savedMatchesArchive || gameState.savedMatchesArchive.length === 0) {
+        recentContainer.innerHTML = `<p style="color:var(--text-dim); font-size:0.82rem;">No completed matches saved yet.</p>`;
+      } else {
+        gameState.savedMatchesArchive.slice(0, 3).forEach(function(m, idx) {
+          var div = document.createElement("div");
+          div.className = "home-card";
+          div.innerHTML = `
+            <div class="home-card-header">
+              <span>${m.date} • ${m.type}</span>
+              <span style="color:var(--accent-gold); font-weight:700;">⭐ MVP: ${m.potm}</span>
+            </div>
+            <div class="home-card-body">
+              <div>
+                <strong style="color:#fff; font-size:0.95rem;">${m.t1} vs ${m.t2}</strong>
+                <div style="color:var(--accent-green); font-size:0.8rem; font-weight:700; margin-top:2px;">${m.result}</div>
+                <div class="home-card-meta">${m.t1Score} vs ${m.t2Score} (${m.overs} ov)</div>
+              </div>
+              <button type="button" class="btn-ctrl modal-btn" style="padding:6px 10px; font-size:0.78rem;" onclick="viewArchivedScorecard(${idx})">Card 📊</button>
+            </div>
+          `;
+          recentContainer.appendChild(div);
+        });
+      }
+    }
+
     function toggleTvOverlay() {
       tvOverlayVisible = !tvOverlayVisible;
       document.getElementById("tv-lower-third").style.display = tvOverlayVisible ? "block" : "none";
@@ -674,14 +972,32 @@
       document.getElementById("tv-match-status").textContent = (gameState.currentInnings === 1 ? "1st Innings: " : "Target: " + gameState.targetRuns + " | ") + gameState.runs + "/" + gameState.wickets;
     }
 
-    // --- MASTER LAUNCHER ---
     function openMasterLauncherModal() {
+      if (isSpectatorMode) return;
+      goToWizardStep(1);
       document.getElementById("master-launcher-modal").style.display = "flex";
       renderLauncherTeamChips();
     }
 
     function closeMasterLauncherModal() {
       document.getElementById("master-launcher-modal").style.display = "none";
+    }
+
+    function goToWizardStep(stepNum) {
+      [1, 2, 3, 4].forEach(function(i) {
+        document.getElementById("wizard-pane-" + i).style.display = (i === stepNum) ? "flex" : "none";
+        var ind = document.getElementById("wz-ind-" + i);
+        ind.className = "wizard-step-indicator" + (i === stepNum ? " active" : (i < stepNum ? " completed" : ""));
+      });
+
+      if (stepNum === 2) {
+        initTeamSquads();
+        renderWizardSquadChecklist(1);
+      } else if (stepNum === 3) {
+        renderWizardSquadChecklist(2);
+      } else if (stepNum === 4) {
+        renderWizardOpenersPickers();
+      }
     }
 
     function setLauncherFormat(fmt, el) {
@@ -700,15 +1016,36 @@
         var c1 = document.createElement("span");
         c1.className = "quick-chip" + (launcherState.team1 === teamName ? " active-t1" : "");
         c1.textContent = teamName;
-        c1.onclick = function() { launcherState.team1 = teamName; renderLauncherTeamChips(); };
+        c1.onclick = function() {
+          launcherState.team1 = teamName;
+          document.getElementById("custom-t1-input").value = "";
+          renderLauncherTeamChips();
+        };
         t1Box.appendChild(c1);
 
         var c2 = document.createElement("span");
         c2.className = "quick-chip" + (launcherState.team2 === teamName ? " active-t2" : "");
         c2.textContent = teamName;
-        c2.onclick = function() { launcherState.team2 = teamName; renderLauncherTeamChips(); };
+        c2.onclick = function() {
+          launcherState.team2 = teamName;
+          document.getElementById("custom-t2-input").value = "";
+          renderLauncherTeamChips();
+        };
         t2Box.appendChild(c2);
       });
+    }
+
+    function setCustomTeam(teamNum, name) {
+      if (!name || !name.trim()) return;
+      var clean = name.trim();
+      if (teamNum === 1) {
+        launcherState.team1 = clean;
+        if (!PRESET_TEAMS[clean]) PRESET_TEAMS[clean] = [];
+      } else {
+        launcherState.team2 = clean;
+        if (!PRESET_TEAMS[clean]) PRESET_TEAMS[clean] = [];
+      }
+      renderLauncherTeamChips();
     }
 
     function setLauncherOvers(ov, el) {
@@ -738,27 +1075,141 @@
       document.getElementById("chip-toss-bowl").classList.toggle("active-opt", dec === 'Bowl');
     }
 
-    function executeMasterLaunch() {
+    function initTeamSquads() {
+      launcherState.team1FullSquad = (PRESET_TEAMS[launcherState.team1] || []).slice();
+      launcherState.team2FullSquad = (PRESET_TEAMS[launcherState.team2] || []).slice();
+
+      if (launcherState.team1FullSquad.length === 0) {
+        launcherState.team1FullSquad = ["Player 1", "Player 2", "Player 3", "Player 4", "Player 5", "Player 6", "Player 7", "Player 8", "Player 9", "Player 10", "Player 11"];
+      }
+      if (launcherState.team2FullSquad.length === 0) {
+        launcherState.team2FullSquad = ["Player 1", "Player 2", "Player 3", "Player 4", "Player 5", "Player 6", "Player 7", "Player 8", "Player 9", "Player 10", "Player 11"];
+      }
+
+      launcherState.team1SelectedXI = launcherState.team1FullSquad.slice(0, 11);
+      launcherState.team2SelectedXI = launcherState.team2FullSquad.slice(0, 11);
+    }
+
+    function renderWizardSquadChecklist(teamNum) {
+      var squad = (teamNum === 1) ? launcherState.team1FullSquad : launcherState.team2FullSquad;
+      var selected = (teamNum === 1) ? launcherState.team1SelectedXI : launcherState.team2SelectedXI;
+      var container = document.getElementById("wz-t" + teamNum + "-checklist");
+      var title = document.getElementById("wz-t" + teamNum + "-title");
+      var count = document.getElementById("wz-t" + teamNum + "-count");
+      
+      title.textContent = (teamNum === 1 ? launcherState.team1 : launcherState.team2) + " Squad Selection:";
+      count.textContent = selected.length + " Selected";
+      container.innerHTML = "";
+
+      squad.forEach(function(player) {
+        var isSel = selected.includes(player);
+        var card = document.createElement("div");
+        card.className = "squad-check-card" + (isSel ? " selected" : "");
+        card.innerHTML = `<span>${player}</span> <span>${isSel ? '✓' : '+'}</span>`;
+        card.onclick = function() {
+          toggleWizardPlayer(teamNum, player);
+        };
+        container.appendChild(card);
+      });
+    }
+
+    function toggleWizardPlayer(teamNum, player) {
+      var arr = (teamNum === 1) ? launcherState.team1SelectedXI : launcherState.team2SelectedXI;
+      var idx = arr.indexOf(player);
+      if (idx > -1) {
+        if (arr.length <= 2) {
+          alert("A match needs at least 2 players!");
+          return;
+        }
+        arr.splice(idx, 1);
+      } else {
+        arr.push(player);
+      }
+      renderWizardSquadChecklist(teamNum);
+    }
+
+    function addWizardCustomPlayer(teamNum) {
+      var input = document.getElementById("wz-add-p" + teamNum + "-input");
+      var name = input.value.trim();
+      if (!name) return;
+
+      var full = (teamNum === 1) ? launcherState.team1FullSquad : launcherState.team2FullSquad;
+      var sel = (teamNum === 1) ? launcherState.team1SelectedXI : launcherState.team2SelectedXI;
+
+      if (!full.includes(name)) full.push(name);
+      if (!sel.includes(name)) sel.push(name);
+
+      input.value = "";
+      renderWizardSquadChecklist(teamNum);
+    }
+
+    function renderWizardOpenersPickers() {
+      var battingFirstTeam = (launcherState.tossDecision === 'Bat') ? launcherState.tossWinner : (launcherState.tossWinner === launcherState.team1 ? launcherState.team2 : launcherState.team1);
+      var bowlingFirstTeam = (battingFirstTeam === launcherState.team1) ? launcherState.team2 : launcherState.team1;
+
+      var battingXI = (battingFirstTeam === launcherState.team1) ? launcherState.team1SelectedXI : launcherState.team2SelectedXI;
+      var bowlingXI = (bowlingFirstTeam === launcherState.team1) ? launcherState.team1SelectedXI : launcherState.team2SelectedXI;
+
+      launcherState.striker = battingXI[0] || "Striker";
+      launcherState.nonStriker = battingXI[1] || "Non-Striker";
+      launcherState.bowler = bowlingXI[0] || "Bowler";
+
+      var sBox = document.getElementById("wz-striker-chips");
+      var nsBox = document.getElementById("wz-nonstriker-chips");
+      var bBox = document.getElementById("wz-bowler-chips");
+      sBox.innerHTML = "";
+      nsBox.innerHTML = "";
+      bBox.innerHTML = "";
+
+      battingXI.forEach(function(p) {
+        var c1 = document.createElement("span");
+        c1.className = "quick-chip" + (launcherState.striker === p ? " active-opt" : "");
+        c1.textContent = p;
+        c1.onclick = function() {
+          if (p === launcherState.nonStriker) return alert("Striker and Non-Striker cannot be the same!");
+          launcherState.striker = p;
+          renderWizardOpenersPickers();
+        };
+        sBox.appendChild(c1);
+
+        var c2 = document.createElement("span");
+        c2.className = "quick-chip" + (launcherState.nonStriker === p ? " active-opt" : "");
+        c2.textContent = p;
+        c2.onclick = function() {
+          if (p === launcherState.striker) return alert("Striker and Non-Striker cannot be the same!");
+          launcherState.nonStriker = p;
+          renderWizardOpenersPickers();
+        };
+        nsBox.appendChild(c2);
+      });
+
+      bowlingXI.forEach(function(p) {
+        var c3 = document.createElement("span");
+        c3.className = "quick-chip" + (launcherState.bowler === p ? " active-opt" : "");
+        c3.textContent = p;
+        c3.onclick = function() {
+          launcherState.bowler = p;
+          renderWizardOpenersPickers();
+        };
+        bBox.appendChild(c3);
+      });
+    }
+
+    function executeFinalMatchLaunch() {
       var t1 = launcherState.team1;
       var t2 = launcherState.team2;
 
-      if (t1 === t2) {
-        alert("Please pick two different teams!");
-        return;
-      }
+      var battingFirst = (launcherState.tossDecision === 'Bat') ? launcherState.tossWinner : (launcherState.tossWinner === t1 ? t2 : t1);
+      var bowlingFirst = (battingFirst === t1) ? t2 : t1;
 
-      var battingFirst = launcherState.tossWinner;
-      var bowlingFirst = launcherState.tossWinner === t1 ? t2 : t1;
-      if (launcherState.tossDecision === 'Bowl') {
-        battingFirst = launcherState.tossWinner === t1 ? t2 : t1;
-        bowlingFirst = launcherState.tossWinner;
-      }
+      var battingXI = (battingFirst === t1) ? launcherState.team1SelectedXI : launcherState.team2SelectedXI;
+      var bowlingXI = (bowlingFirst === t1) ? launcherState.team1SelectedXI : launcherState.team2SelectedXI;
 
       gameState.matchType = launcherState.format;
       gameState.currentTeam1 = battingFirst;
       gameState.currentTeam2 = bowlingFirst;
-      gameState.team1Squad = (PRESET_TEAMS[battingFirst] || ["Batter 1", "Batter 2"]).slice();
-      gameState.team2Squad = (PRESET_TEAMS[bowlingFirst] || ["Bowler 1", "Bowler 2"]).slice();
+      gameState.team1Squad = battingXI.slice();
+      gameState.team2Squad = bowlingXI.slice();
       gameState.matchMaxOvers = launcherState.overs;
       gameState.runs = 0;
       gameState.wickets = 0;
@@ -781,19 +1232,36 @@
       gameState.history = [];
       overRunTracker = 0;
 
-      var b1 = gameState.team1Squad[0] || "Batter 1";
-      var b2 = gameState.team1Squad[1] || "Batter 2";
-      var bowl = gameState.team2Squad[0] || "Bowler 1";
-
-      gameState.striker = { name: b1, runs: 0, balls: 0, fours: 0, sixes: 0 };
-      gameState.nonStriker = { name: b2, runs: 0, balls: 0, fours: 0, sixes: 0 };
-      gameState.bowler = { name: bowl, legalBalls: 0, maidens: 0, runsConceded: 0, wickets: 0 };
+      gameState.striker = { name: launcherState.striker, runs: 0, balls: 0, fours: 0, sixes: 0 };
+      gameState.nonStriker = { name: launcherState.nonStriker, runs: 0, balls: 0, fours: 0, sixes: 0 };
+      gameState.bowler = { name: launcherState.bowler, legalBalls: 0, maidens: 0, runsConceded: 0, wickets: 0 };
 
       closeMasterLauncherModal();
       saveToStorage();
       renderAll();
-      switchMainView('scorer', document.querySelectorAll('.tab-nav-btn')[0]);
-      announceCommentary("Match underway! " + battingFirst + " batting first against " + bowlingFirst + "!");
+      switchMainView('scorer', document.querySelectorAll('.tab-nav-btn')[1]);
+      announceCommentary("Play begins! " + battingFirst + " batting first against " + bowlingFirst + "!");
+    }
+
+    function scheduleMatchFromLauncher() {
+      var t1 = launcherState.team1;
+      var t2 = launcherState.team2;
+
+      if (!gameState.fixtures) gameState.fixtures = [];
+      gameState.fixtures.push({
+        id: Date.now(),
+        t1: t1,
+        t2: t2,
+        overs: launcherState.overs,
+        venue: gameState.venue || "Tumakuru Stadium",
+        type: launcherState.format,
+        date: new Date().toLocaleDateString()
+      });
+
+      saveToStorage();
+      closeMasterLauncherModal();
+      renderHomeHub();
+      alert("Match scheduled between " + t1 + " and " + t2 + "!");
     }
 
     function renderAll() {
@@ -814,15 +1282,6 @@
       var tagEl = document.getElementById("match-type-tag");
       tagEl.textContent = (gameState.matchType || "TOURNAMENT").toUpperCase() + " MATCH";
       tagEl.className = "fixture-tag " + (gameState.matchType === 'Friendly' ? 'tag-friendly' : (gameState.matchType === 'Series' ? 'tag-series' : 'tag-tournament'));
-
-      var seriesBanner = document.getElementById("series-status-banner");
-      if (gameState.matchType === 'Series') {
-        seriesBanner.style.display = "flex";
-        document.getElementById("series-teams-headline").textContent = gameState.currentTeam1 + " vs " + gameState.currentTeam2;
-        document.getElementById("series-score-tally").textContent = gameState.currentTeam1 + " " + gameState.seriesRecord.team1Wins + " - " + gameState.seriesRecord.team2Wins + " " + gameState.currentTeam2;
-      } else {
-        seriesBanner.style.display = "none";
-      }
 
       var chaseBox = document.getElementById("chase-info");
       var endBtn = document.getElementById("btn-end-innings");
@@ -865,8 +1324,19 @@
       var totalOv = (gameState.bowler.legalBalls / 6) || 1;
       document.getElementById("econ-bowler").textContent = gameState.bowler.legalBalls === 0 ? "0.0" : (gameState.bowler.runsConceded / totalOv).toFixed(1);
 
+      var maxBowlerQuota = Math.max(1, Math.ceil(gameState.matchMaxOvers / 5));
+      var bowlerLegalBalls = gameState.bowler.legalBalls || 0;
+      var bowlerOversCompleted = Math.floor(bowlerLegalBalls / 6) + "." + (bowlerLegalBalls % 6);
+      var quotaBadge = document.getElementById("bowler-quota-badge");
+      if (quotaBadge) {
+        var isQuotaExceeded = Math.floor(bowlerLegalBalls / 6) >= maxBowlerQuota;
+        quotaBadge.textContent = "Quota: " + bowlerOversCompleted + "/" + maxBowlerQuota + " ov";
+        quotaBadge.className = "quota-tag" + (isQuotaExceeded ? " quota-done" : "");
+      }
+
       renderBallStrip();
       renderTvOverlay();
+      renderHomeHub();
     }
 
     function renderBatter(prefix, batter) {
@@ -898,31 +1368,190 @@
       });
     }
 
-    function openPlayerSelectionModal(role) {
-      if (isMatchLocked) return;
-      activeTargetRole = role;
-      var isT1 = gameState.currentInnings === 1;
-      var squad = role === 'bowler' ? (isT1 ? gameState.team2Squad : gameState.team1Squad) : (isT1 ? gameState.team1Squad : gameState.team2Squad);
-      
-      if (role === 'potmOverride') {
-        squad = gameState.team1Squad.concat(gameState.team2Squad);
-        document.getElementById("player-select-title").textContent = "Override Player of the Match";
+    function openWicketModal() {
+      if (isMatchLocked || gameState.isMatchOver || isSpectatorMode) return;
+      document.getElementById("fielder-tray").style.display = "none";
+      document.getElementById("wicket-modal").style.display = "flex";
+    }
+
+    function closeWicketModal() {
+      document.getElementById("wicket-modal").style.display = "none";
+    }
+
+    function selectDismissalType(type) {
+      selectedDismissalKind = type;
+
+      if (type === "Caught" || type === "Run Out" || type === "Stumped") {
+        var tray = document.getElementById("fielder-tray");
+        var container = document.getElementById("fielder-chips-container");
+        container.innerHTML = "";
+
+        var isT1Batting = (gameState.currentInnings === 1);
+        var fieldingSquad = isT1Batting ? gameState.team2Squad : gameState.team1Squad;
+
+        fieldingSquad.forEach(function(fielderName) {
+          var chip = document.createElement("div");
+          chip.className = "squad-select-chip";
+          chip.textContent = fielderName;
+          chip.onclick = function() {
+            executeWicketWithFielder(type, fielderName);
+          };
+          container.appendChild(chip);
+        });
+
+        tray.style.display = "block";
       } else {
-        document.getElementById("player-select-title").textContent = role === 'bowler' ? "Select Bowler" : (role === 'striker' ? "Switch Striker" : (role === 'nonStriker' ? "Switch Non-Striker" : "Select Incoming Batter"));
+        executeWicketWithFielder(type, null);
+      }
+    }
+
+    function executeWicketWithFielder(type, fielderName) {
+      closeWicketModal();
+      recordHistory();
+
+      if (gameState.totalLegalBalls % 6 === 0) gameState.currentOverBalls = [];
+
+      var completedOvers = Math.floor(gameState.totalLegalBalls / 6);
+      var remBalls = gameState.totalLegalBalls % 6;
+      var currentOverStr = completedOvers + "." + (remBalls + 1);
+
+      var statusText = type + " b " + gameState.bowler.name;
+      if (type === "Caught") {
+        statusText = "c " + (fielderName || "Sub") + " b " + gameState.bowler.name;
+      } else if (type === "Run Out") {
+        statusText = "run out (" + (fielderName || "Sub") + ")";
+      } else if (type === "Stumped") {
+        statusText = "st †" + (fielderName || "Keeper") + " b " + gameState.bowler.name;
       }
 
+      gameState.dismissals.push({
+        name: gameState.striker.name,
+        status: statusText,
+        runs: gameState.striker.runs,
+        balls: gameState.striker.balls,
+        fours: gameState.striker.fours,
+        sixes: gameState.striker.sixes
+      });
+
+      gameState.fallOfWickets.push({
+        score: gameState.runs,
+        wicket: gameState.wickets + 1,
+        over: currentOverStr,
+        player: gameState.striker.name
+      });
+
+      gameState.wickets += 1;
+      gameState.totalLegalBalls += 1;
+      gameState.currentOverBalls.push("W");
+      gameState.striker.balls += 1;
+      gameState.bowler.legalBalls += 1;
+
+      if (type !== "Run Out") {
+        gameState.bowler.wickets += 1;
+      }
+
+      gameState.deliveryTimeline.unshift({
+        ball: currentOverStr,
+        bowler: gameState.bowler.name,
+        batter: gameState.striker.name,
+        res: "WICKET: " + statusText,
+        score: gameState.runs + "/" + gameState.wickets
+      });
+
+      openPlayerSelectionModal('nextBatter');
+
+      if (gameState.totalLegalBalls % 6 === 0) handleOverCompletion();
+
+      saveToStorage();
+      renderAll();
+      checkMatchFinish();
+    }
+
+    function openPlayerSelectionModal(role) {
+      if (isMatchLocked || isSpectatorMode) return;
+      activeTargetRole = role;
+      
+      var isT1 = (gameState.currentInnings === 1);
+      var battingSquad = isT1 ? gameState.team1Squad : gameState.team2Squad;
+      var bowlingSquad = isT1 ? gameState.team2Squad : gameState.team1Squad;
       var container = document.getElementById("player-chips-container");
       container.innerHTML = "";
 
-      squad.forEach(function(name) {
+      if (role === 'potmOverride') {
+        document.getElementById("player-select-title").textContent = "Override Player of the Match";
+        var allPlayers = gameState.team1Squad.concat(gameState.team2Squad);
+        allPlayers.forEach(function(name) {
+          var chip = document.createElement("div");
+          chip.className = "squad-select-chip";
+          chip.textContent = name;
+          chip.onclick = function() { selectPlayerFromChip(name); };
+          container.appendChild(chip);
+        });
+        document.getElementById("player-select-modal").style.display = "flex";
+        return;
+      }
+
+      if (role === 'bowler') {
+        document.getElementById("player-select-title").textContent = "Select Next Bowler";
+        var maxQuotaBalls = Math.max(1, Math.ceil(gameState.matchMaxOvers / 5)) * 6;
+
+        bowlingSquad.forEach(function(name) {
+          var chip = document.createElement("div");
+          chip.className = "squad-select-chip";
+          
+          var bStats = gameState.bowlersList[name];
+          var legalBallsBowled = bStats ? bStats.legalBalls : 0;
+          var oversDoneStr = Math.floor(legalBallsBowled / 6) + "." + (legalBallsBowled % 6);
+          
+          var bowledConsecutiveOver = (name === gameState.lastOverBowler);
+          var quotaExhausted = (legalBallsBowled >= maxQuotaBalls);
+
+          chip.innerHTML = `<strong>${name}</strong> <span style="font-size:0.75rem; color:var(--text-dim);">(${oversDoneStr} ov)</span>`;
+
+          if (bowledConsecutiveOver) {
+            chip.className += " disabled";
+            chip.innerHTML += `<div style="color:#f87171; font-size:0.7rem; font-weight:700;">[Bowled Last Over]</div>`;
+          } 
+          else if (quotaExhausted) {
+            chip.className += " disabled";
+            chip.innerHTML += `<div style="color:#ef4444; font-size:0.7rem; font-weight:700;">[Quota Completed]</div>`;
+          } 
+          else {
+            chip.onclick = function() { selectPlayerFromChip(name); };
+          }
+          container.appendChild(chip);
+        });
+
+        document.getElementById("player-select-modal").style.display = "flex";
+        return;
+      }
+
+      document.getElementById("player-select-title").textContent = 
+        (role === 'nextBatter') ? "Select Incoming Batter" : 
+        (role === 'striker' ? "Switch Striker" : "Switch Non-Striker");
+
+      var outPlayersList = gameState.dismissals.map(function(d) { return d.name; });
+      var partnerAtCrease = (role === 'striker' || role === 'nextBatter') ? gameState.nonStriker.name : gameState.striker.name;
+
+      battingSquad.forEach(function(name) {
         var chip = document.createElement("div");
         chip.className = "squad-select-chip";
-        chip.textContent = name;
 
-        if (role === 'bowler' && name === gameState.lastOverBowler) {
+        var isAlreadyOut = outPlayersList.includes(name);
+        var isCurrentlyBatting = (name === partnerAtCrease) || 
+          (role === 'striker' && name === gameState.striker.name) ||
+          (role === 'nonStriker' && name === gameState.nonStriker.name);
+
+        if (isAlreadyOut) {
           chip.className += " disabled";
-          chip.textContent += " [Bowled Last]";
-        } else {
+          chip.innerHTML = `<strong>${name}</strong> <span style="color:#f87171; font-size:0.72rem; font-weight:800;">[OUT ❌]</span>`;
+        }
+        else if (isCurrentlyBatting) {
+          chip.className += " disabled";
+          chip.innerHTML = `<strong>${name}</strong> <span style="color:var(--accent-cyan); font-size:0.72rem; font-weight:800;">[At Crease 🏏]</span>`;
+        }
+        else {
+          chip.textContent = name;
           chip.onclick = function() { selectPlayerFromChip(name); };
         }
         container.appendChild(chip);
@@ -959,7 +1588,7 @@
     }
 
     function addRuns(runValue) {
-      if (isMatchLocked || gameState.isMatchOver) return;
+      if (isMatchLocked || gameState.isMatchOver || isSpectatorMode) return;
 
       var maxBalls = gameState.matchMaxOvers * 6;
       if (gameState.totalLegalBalls >= maxBalls) return;
@@ -999,7 +1628,7 @@
     }
 
     function handleExtra() {
-      if (isMatchLocked || gameState.isMatchOver) return;
+      if (isMatchLocked || gameState.isMatchOver || isSpectatorMode) return;
       recordHistory();
       gameState.runs += 1;
       overRunTracker += 1;
@@ -1028,7 +1657,7 @@
     }
 
     function manualSwapStrike() {
-      if (isMatchLocked) return;
+      if (isMatchLocked || isSpectatorMode) return;
       recordHistory();
       swapStrike();
       saveToStorage();
@@ -1067,65 +1696,8 @@
       }, 350);
     }
 
-    function handleWicket() {
-      if (isMatchLocked || gameState.isMatchOver) return;
-      var maxBalls = gameState.matchMaxOvers * 6;
-      if (gameState.totalLegalBalls >= maxBalls) return;
-
-      if (gameState.wickets < 10) {
-        recordHistory();
-        if (gameState.totalLegalBalls % 6 === 0) gameState.currentOverBalls = [];
-
-        var completedOvers = Math.floor(gameState.totalLegalBalls / 6);
-        var remBalls = gameState.totalLegalBalls % 6;
-        var currentOverStr = completedOvers + "." + (remBalls + 1);
-
-        var mode = "Caught";
-        var dType = mode + " b " + gameState.bowler.name;
-
-        gameState.dismissals.push({
-          name: gameState.striker.name,
-          status: dType,
-          runs: gameState.striker.runs,
-          balls: gameState.striker.balls,
-          fours: gameState.striker.fours,
-          sixes: gameState.striker.sixes
-        });
-
-        gameState.fallOfWickets.push({
-          score: gameState.runs,
-          wicket: gameState.wickets + 1,
-          over: currentOverStr,
-          player: gameState.striker.name
-        });
-
-        gameState.wickets += 1;
-        gameState.totalLegalBalls += 1;
-        gameState.currentOverBalls.push("W");
-        gameState.striker.balls += 1;
-        gameState.bowler.legalBalls += 1;
-        gameState.bowler.wickets += 1;
-
-        gameState.deliveryTimeline.unshift({
-          ball: currentOverStr,
-          bowler: gameState.bowler.name,
-          batter: gameState.striker.name,
-          res: "WICKET (OUT)",
-          score: gameState.runs + "/" + gameState.wickets
-        });
-
-        openPlayerSelectionModal('nextBatter');
-
-        if (gameState.totalLegalBalls % 6 === 0) handleOverCompletion();
-
-        saveToStorage();
-        renderAll();
-        checkMatchFinish();
-      }
-    }
-
     function handleEndInnings() {
-      if (isMatchLocked || gameState.currentInnings === 2) return;
+      if (isMatchLocked || gameState.currentInnings === 2 || isSpectatorMode) return;
       recordHistory();
 
       gameState.innings1Snapshot = {
@@ -1404,6 +1976,7 @@
       gameState.savedMatchesArchive.splice(idx, 1);
       saveToStorage();
       renderMatchHistory();
+      renderHomeHub();
     }
 
     function renderPlaying11View() {
@@ -1431,6 +2004,7 @@
     }
 
     function addCustomPlayer(teamNum) {
+      if (isSpectatorMode) return;
       var name = prompt("Enter player name to add to Playing 11:");
       if (!name || !name.trim()) return;
       if (teamNum === 1) gameState.team1Squad.push(name.trim());
@@ -1439,7 +2013,6 @@
       renderPlaying11View();
     }
 
-    // --- 2-INNINGS FULL SCORECARD MODAL ---
     function openScorecardModal() {
       document.getElementById("modal-match-headline").textContent = gameState.currentTeam1 + " vs " + gameState.currentTeam2 + " Scorecard";
       
@@ -1527,9 +2100,7 @@
       document.getElementById("scorecard-modal").style.display = "none";
     }
 
-    // --- VISUAL CHARTS: MANHATTAN & WORM ---
     function drawAnalyticsCharts() {
-      // 1. Manhattan Bar Chart
       var mCanvas = document.getElementById("manhattan-canvas");
       if (mCanvas) {
         var ctxM = mCanvas.getContext("2d");
@@ -1554,7 +2125,6 @@
         });
       }
 
-      // 2. Worm Progression Line Chart
       var wCanvas = document.getElementById("worm-canvas");
       if (wCanvas) {
         var ctxW = wCanvas.getContext("2d");
@@ -1582,7 +2152,6 @@
       }
     }
 
-    // --- TIMELINE DRAWER ---
     function openTimelineModal() {
       var cont = document.getElementById("timeline-list-container");
       cont.innerHTML = "";
@@ -1606,7 +2175,6 @@
       document.getElementById("timeline-modal").style.display = "none";
     }
 
-    // --- MATCH POSTER ---
     function openPosterModal() {
       var winner = gameState.isMatchOver ? (gameState.runs >= gameState.targetRuns ? gameState.currentTeam2 : gameState.currentTeam1) : "In Progress";
       document.getElementById("poster-teams-title").textContent = gameState.currentTeam1 + " vs " + gameState.currentTeam2;
@@ -1664,7 +2232,6 @@
       link.click();
     }
 
-    // --- LEADERBOARDS ---
     function renderLeaderboards() {
       var orangeBox = document.getElementById("orange-cap-list");
       var purpleBox = document.getElementById("purple-cap-list");
@@ -1739,40 +2306,6 @@
       });
     }
 
-    function renderFixturesList() {
-      var cont = document.getElementById("fixtures-list-container");
-      if (!cont) return;
-      cont.innerHTML = "";
-
-      if (!gameState.fixtures || gameState.fixtures.length === 0) {
-        cont.innerHTML = "<p style='color:var(--text-dim); font-size:0.85rem;'>No scheduled matches yet.</p>";
-        return;
-      }
-
-      gameState.fixtures.forEach(function(f, idx) {
-        var row = document.createElement("div");
-        row.className = "fixture-row";
-        row.innerHTML = `
-          <div class="fixture-meta">
-            <span class="fixture-tag ${f.type === 'Friendly' ? 'tag-friendly' : (f.type === 'Series' ? 'tag-series' : 'tag-tournament')}">${f.type}</span>
-            <strong style="color:#fff; font-size:0.95rem; margin-top:2px;">${f.t1} vs ${f.t2}</strong>
-            <span style="font-size:0.75rem; color:var(--text-dim);">${f.overs} Overs • ${f.venue} (${f.date})</span>
-          </div>
-          <div style="display:flex; gap:6px;">
-            <button type="button" class="btn-ctrl four-btn" style="padding:6px 12px; font-size:0.8rem;" onclick="launchFromFixture(${idx})">Play ➔</button>
-            <button type="button" class="btn-ctrl" style="padding:6px 10px; font-size:0.8rem;" onclick="removeFixture(${idx})">✕</button>
-          </div>
-        `;
-        cont.appendChild(row);
-      });
-    }
-
-    function removeFixture(idx) {
-      gameState.fixtures.splice(idx, 1);
-      saveToStorage();
-      renderFixturesList();
-    }
-
     function launchFromFixture(idx) {
       var f = gameState.fixtures[idx];
       startMatchSession(f.t1, f.t2, f.overs, f.type, f.venue);
@@ -1817,12 +2350,12 @@
 
       saveToStorage();
       renderAll();
-      switchMainView('scorer', document.querySelectorAll('.tab-nav-btn')[0]);
+      switchMainView('scorer', document.querySelectorAll('.tab-nav-btn')[1]);
       announceCommentary("Match underway between " + t1 + " and " + t2 + ". Play begins!");
     }
 
-    // --- SETTINGS & PROFILE ---
     function openSettingsModal() {
+      if (isSpectatorMode) return;
       document.getElementById("match-lock-toggle").checked = isMatchLocked;
       document.getElementById("settings-modal").style.display = "flex";
     }
@@ -1848,10 +2381,10 @@
     }
 
     function openProfileModal() {
+      if (isSpectatorMode) return;
       var pName = (gameState.userProfile && gameState.userProfile.name) ? gameState.userProfile.name : "Hem Prasad";
       document.getElementById("profile-name-input").value = pName;
       document.getElementById("modal-profile-avatar").textContent = pName.charAt(0).toUpperCase();
-      document.getElementById("prof-matches-count").textContent = (gameState.savedMatchesArchive || []).length;
       document.getElementById("profile-modal").style.display = "flex";
     }
 
@@ -1884,7 +2417,7 @@
     }
 
     function handleUndo() {
-      if (isMatchLocked || !gameState.history || gameState.history.length === 0) return;
+      if (isMatchLocked || !gameState.history || gameState.history.length === 0 || isSpectatorMode) return;
       var prev = JSON.parse(gameState.history.pop());
       gameState.runs = prev.runs;
       gameState.wickets = prev.wickets;
@@ -1925,7 +2458,7 @@
     }
 
     function handleReset() {
-      if (isMatchLocked) return;
+      if (isMatchLocked || isSpectatorMode) return;
       if (confirm("Reset current match score?")) {
         gameState.runs = 0;
         gameState.wickets = 0;
@@ -1938,10 +2471,6 @@
         gameState.deliveryTimeline = [];
         gameState.dismissals = [];
         gameState.fallOfWickets = [];
-        gameState.innings1Worm = [0];
-        gameState.innings2Worm = [0];
-        gameState.innings1OverRuns = [];
-        gameState.innings2OverRuns = [];
         gameState.innings1Snapshot = null;
         gameState.history = [];
         overRunTracker = 0;
@@ -1955,6 +2484,8 @@
 
     loadFromStorage();
     renderAll();
+    renderHomeHub();
+    initPeerNetwork();
   </script>
 </body>
 </html>
