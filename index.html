@@ -76,9 +76,9 @@
 
     <!-- VIEW 1: LIVE BROADCAST SCORER -->
     <div id="view-scorer" class="view-panel" style="display: none;">
-      <!-- Spectator Read-Only Mode Banner -->
+      <!-- Spectator Cloud Banner -->
       <div id="spectator-live-banner" class="spectator-banner" style="display: none;">
-        <span>📡 LIVE SPECTATOR BROADCAST (INSTANT SYNC)</span>
+        <span>📡 LIVE CLOUD SYNC ACTIVE (AUTO-UPDATING)</span>
         <button type="button" class="btn-ctrl" style="padding: 4px 10px; font-size: 0.75rem; background: #04101c; border:none; color:#10b981; font-weight:800;" onclick="exitSpectatorMode()">Exit to App</button>
       </div>
 
@@ -311,11 +311,11 @@
   <div id="spectator-modal" class="modal-overlay" onclick="handleBackdropClick(event, 'spectator-modal')">
     <div class="modal-content" style="max-width: 440px; text-align: center;">
       <div class="modal-header">
-        <h3 style="font-family:'Chakra Petch', sans-serif;">📡 Spectator Scan & Share</h3>
+        <h3 style="font-family:'Chakra Petch', sans-serif;">📡 Real-Time Cloud Broadcast</h3>
         <button type="button" class="close-btn" onclick="closeSpectatorModal()">&times;</button>
       </div>
 
-      <p style="font-size:0.82rem; color:var(--text-dim);">Scan this QR Code with any phone camera to view this live match in real-time:</p>
+      <p style="font-size:0.82rem; color:var(--text-dim);">Scan this QR Code with any phone to watch the match update ball-by-ball in real time:</p>
 
       <div class="qr-container-box" id="qr-box-target"></div>
 
@@ -625,6 +625,11 @@
   </div>
 
   <script>
+    // ==========================================
+    // 🌐 YOUR OFFICIAL CLOUD DATABASE ENDPOINT
+    // ==========================================
+    var FIREBASE_DB_URL = "https://fastx-1707-default-rtdb.firebaseio.com/";
+
     var PRESET_TEAMS = {
       "FCG Challengers": ["Anup", "Hem", "Arjun", "Sagar", "Rohit", "Kiran", "Santosh", "Pawan", "Manoj", "Harish", "Deepak"],
       "Warriors": ["Vignesh", "Chetan", "Praveen", "Naveen", "Deepu", "Siraj", "Ajay", "Prashanth", "Raju", "Ganesh", "Mahesh"],
@@ -652,6 +657,7 @@
     var activeTargetRole = "";
     var isMatchLocked = false;
     var isSpectatorMode = false;
+    var currentMatchRoomId = "match_live_01";
     var overRunTracker = 0;
     var tvOverlayVisible = false;
     var selectedDismissalKind = "Caught";
@@ -715,6 +721,7 @@
       try {
         localStorage.setItem("cricketGameState", JSON.stringify(gameState));
       } catch (e) {}
+      pushLiveStateToCloud();
     }
 
     function loadFromStorage() {
@@ -742,59 +749,67 @@
       } catch (e) {}
     }
 
-    // --- INSTANT QR SYNC ENGINE (DIRECT SNAPSHOT ENCODING) ---
-    function checkSpectatorUrlParameter() {
-      var params = new URLSearchParams(window.location.search);
-      var encodedData = params.get("live");
+    // --- REALTIME CLOUD PUSH & SPECTATOR PULL ---
+    function pushLiveStateToCloud() {
+      if (isSpectatorMode) return;
+      try {
+        fetch(FIREBASE_DB_URL + "liveMatches/" + currentMatchRoomId + ".json", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(gameState)
+        }).catch(function(err) {});
+      } catch (e) {}
+    }
 
-      if (encodedData) {
-        try {
-          var decodedJson = decodeURIComponent(escape(atob(encodedData)));
-          var snapshot = JSON.parse(decodedJson);
-          gameState = Object.assign({}, gameState, snapshot);
-          enableSpectatorMode();
-          renderAll();
-        } catch (e) {
-          console.error("Invalid spectator link data", e);
-        }
+    function startSpectatorLiveListener() {
+      var syncUrl = FIREBASE_DB_URL + "liveMatches/" + currentMatchRoomId + ".json";
+      
+      // Initial fetch
+      fetch(syncUrl)
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          if (data) {
+            gameState = Object.assign({}, gameState, data);
+            renderAll();
+          }
+        }).catch(function() {});
+
+      // Continuous 1-second background poll
+      setInterval(function() {
+        if (!isSpectatorMode) return;
+        fetch(syncUrl)
+          .then(function(res) { return res.json(); })
+          .then(function(data) {
+            if (data && (data.runs !== gameState.runs || data.wickets !== gameState.wickets || data.totalLegalBalls !== gameState.totalLegalBalls)) {
+              gameState = Object.assign({}, gameState, data);
+              renderAll();
+            }
+          }).catch(function() {});
+      }, 1000);
+    }
+
+    function checkSpectatorUrl() {
+      var params = new URLSearchParams(window.location.search);
+      var room = params.get("match");
+      if (room) {
+        currentMatchRoomId = room;
+        enableSpectatorMode();
+        startSpectatorLiveListener();
       }
     }
 
     function openSpectatorModal() {
-      // 1. Pack current game into a clean compact payload
-      var payload = {
-        runs: gameState.runs,
-        wickets: gameState.wickets,
-        totalLegalBalls: gameState.totalLegalBalls,
-        currentTeam1: gameState.currentTeam1,
-        currentTeam2: gameState.currentTeam2,
-        currentInnings: gameState.currentInnings,
-        matchMaxOvers: gameState.matchMaxOvers,
-        targetRuns: gameState.targetRuns,
-        striker: gameState.striker,
-        nonStriker: gameState.nonStriker,
-        bowler: gameState.bowler,
-        currentOverBalls: gameState.currentOverBalls,
-        dismissals: gameState.dismissals,
-        potmData: gameState.potmData,
-        isMatchOver: gameState.isMatchOver,
-        innings1Snapshot: gameState.innings1Snapshot
-      };
-
-      var compressed = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
-
-      // 2. Build live URL pointing to your hosted web app
+      pushLiveStateToCloud();
       var baseUrl = window.location.href.split("?")[0];
       if (baseUrl.startsWith("file://")) {
         baseUrl = "https://hemprasad17.github.io/FASTX/";
       }
 
-      var fullUrl = baseUrl + "?live=" + compressed;
-      document.getElementById("spectator-link-input").value = fullUrl;
+      var fullShareUrl = baseUrl + "?match=" + currentMatchRoomId;
+      document.getElementById("spectator-link-input").value = fullShareUrl;
 
-      // 3. Render clean QR Code Image
       var qrBox = document.getElementById("qr-box-target");
-      qrBox.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(fullUrl)}" width="180" height="180" alt="Spectator QR Code" style="display:block; border-radius:6px;" />`;
+      qrBox.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(fullShareUrl)}" width="180" height="180" alt="Spectator QR Code" style="display:block; border-radius:6px;" />`;
 
       document.getElementById("spectator-modal").style.display = "flex";
     }
@@ -1191,6 +1206,8 @@
       var battingXI = (battingFirst === t1) ? launcherState.team1SelectedXI : launcherState.team2SelectedXI;
       var bowlingXI = (bowlingFirst === t1) ? launcherState.team1SelectedXI : launcherState.team2SelectedXI;
 
+      currentMatchRoomId = "match_" + Date.now();
+
       gameState.matchType = launcherState.format;
       gameState.currentTeam1 = battingFirst;
       gameState.currentTeam2 = bowlingFirst;
@@ -1268,6 +1285,15 @@
       var tagEl = document.getElementById("match-type-tag");
       tagEl.textContent = (gameState.matchType || "TOURNAMENT").toUpperCase() + " MATCH";
       tagEl.className = "fixture-tag " + (gameState.matchType === 'Friendly' ? 'tag-friendly' : (gameState.matchType === 'Series' ? 'tag-series' : 'tag-tournament'));
+
+      var seriesBanner = document.getElementById("series-status-banner");
+      if (gameState.matchType === 'Series') {
+        seriesBanner.style.display = "flex";
+        document.getElementById("series-teams-headline").textContent = gameState.currentTeam1 + " vs " + gameState.currentTeam2;
+        document.getElementById("series-score-tally").textContent = gameState.currentTeam1 + " " + gameState.seriesRecord.team1Wins + " - " + gameState.seriesRecord.team2Wins + " " + gameState.currentTeam2;
+      } else {
+        seriesBanner.style.display = "none";
+      }
 
       var chaseBox = document.getElementById("chase-info");
       var endBtn = document.getElementById("btn-end-innings");
@@ -2472,7 +2498,7 @@
     loadFromStorage();
     renderAll();
     renderHomeHub();
-    checkSpectatorUrlParameter();
+    checkSpectatorUrl();
   </script>
 </body>
 </html>
