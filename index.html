@@ -7,8 +7,6 @@
   <link rel="stylesheet" href="style.css" />
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#0a0f1d" />
-  <!-- PeerJS for Real-Time Peer-to-Peer Live Sync -->
-  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 </head>
 <body>
 
@@ -80,8 +78,8 @@
     <div id="view-scorer" class="view-panel" style="display: none;">
       <!-- Spectator Read-Only Mode Banner -->
       <div id="spectator-live-banner" class="spectator-banner" style="display: none;">
-        <span>📡 LIVE SPECTATOR BROADCAST (REAL-TIME SYNC)</span>
-        <button type="button" class="btn-ctrl" style="padding: 2px 8px; font-size: 0.72rem; background: rgba(0,0,0,0.3); border:none; color:#fff;" onclick="exitSpectatorMode()">Exit</button>
+        <span>📡 LIVE SPECTATOR BROADCAST (INSTANT SYNC)</span>
+        <button type="button" class="btn-ctrl" style="padding: 4px 10px; font-size: 0.75rem; background: #04101c; border:none; color:#10b981; font-weight:800;" onclick="exitSpectatorMode()">Exit to App</button>
       </div>
 
       <!-- Match Lock Warning -->
@@ -108,7 +106,7 @@
         </div>
       </div>
 
-      <!-- Live Scoreboard Card -->
+      <!-- Scoreboard Card -->
       <section id="scoreboard-section">
         <div class="section-badge">MATCH CONSOLE</div>
         <div id="scoreboard-card">
@@ -206,7 +204,7 @@
             </table>
           </div>
 
-          <!-- Scoring Keypad -->
+          <!-- Scoring Keypad (Hidden in Spectator Mode) -->
           <div class="score-controls" id="scorer-keypad-panel">
             <button type="button" class="btn-ctrl score-action-btn" onclick="addRuns(0)">0</button>
             <button type="button" class="btn-ctrl score-action-btn" onclick="addRuns(1)">+1</button>
@@ -313,11 +311,11 @@
   <div id="spectator-modal" class="modal-overlay" onclick="handleBackdropClick(event, 'spectator-modal')">
     <div class="modal-content" style="max-width: 440px; text-align: center;">
       <div class="modal-header">
-        <h3 style="font-family:'Chakra Petch', sans-serif;">📡 Real-Time Spectator Sync</h3>
+        <h3 style="font-family:'Chakra Petch', sans-serif;">📡 Spectator Scan & Share</h3>
         <button type="button" class="close-btn" onclick="closeSpectatorModal()">&times;</button>
       </div>
 
-      <p style="font-size:0.82rem; color:var(--text-dim);">Scan this QR code from any phone to stream the live score over the cloud:</p>
+      <p style="font-size:0.82rem; color:var(--text-dim);">Scan this QR Code with any phone camera to view this live match in real-time:</p>
 
       <div class="qr-container-box" id="qr-box-target"></div>
 
@@ -658,11 +656,6 @@
     var tvOverlayVisible = false;
     var selectedDismissalKind = "Caught";
 
-    // P2P Live Sync Variables
-    var peer = null;
-    var hostPeerId = null;
-    var peerConnections = [];
-
     var gameState = {
       userProfile: { name: "Hem Prasad" },
       matchType: "Tournament",
@@ -722,7 +715,6 @@
       try {
         localStorage.setItem("cricketGameState", JSON.stringify(gameState));
       } catch (e) {}
-      broadcastLiveStateToPeers();
     }
 
     function loadFromStorage() {
@@ -750,66 +742,59 @@
       } catch (e) {}
     }
 
-    // --- REAL-TIME CLOUD PEER SYNC (PEERJS) ---
-    function initPeerNetwork() {
+    // --- INSTANT QR SYNC ENGINE (DIRECT SNAPSHOT ENCODING) ---
+    function checkSpectatorUrlParameter() {
       var params = new URLSearchParams(window.location.search);
-      var matchRoom = params.get("match");
+      var encodedData = params.get("live");
 
-      if (matchRoom) {
-        // CLIENT SPECTATOR PHONE
-        isSpectatorMode = true;
-        enableSpectatorMode();
-        peer = new Peer();
-        peer.on('open', function(id) {
-          var conn = peer.connect(matchRoom);
-          conn.on('open', function() {
-            conn.send({ type: "REQUEST_SYNC" });
-          });
-          conn.on('data', function(data) {
-            if (data && data.state) {
-              gameState = data.state;
-              renderAll();
-            }
-          });
-        });
-      } else {
-        // SCORER / HOST PHONE
-        peer = new Peer();
-        peer.on('open', function(id) {
-          hostPeerId = id;
-        });
-        peer.on('connection', function(conn) {
-          peerConnections.push(conn);
-          conn.on('data', function(data) {
-            if (data && data.type === "REQUEST_SYNC") {
-              conn.send({ state: gameState });
-            }
-          });
-        });
-      }
-    }
-
-    function broadcastLiveStateToPeers() {
-      if (peerConnections.length > 0) {
-        peerConnections.forEach(function(conn) {
-          if (conn.open) {
-            conn.send({ state: gameState });
-          }
-        });
+      if (encodedData) {
+        try {
+          var decodedJson = decodeURIComponent(escape(atob(encodedData)));
+          var snapshot = JSON.parse(decodedJson);
+          gameState = Object.assign({}, gameState, snapshot);
+          enableSpectatorMode();
+          renderAll();
+        } catch (e) {
+          console.error("Invalid spectator link data", e);
+        }
       }
     }
 
     function openSpectatorModal() {
-      // Use live GitHub Pages URL or current online origin
-      var baseUrl = window.location.origin.includes("github.io") 
-        ? window.location.origin + window.location.pathname 
-        : "https://hemprasad17.github.io/FASTX/";
+      // 1. Pack current game into a clean compact payload
+      var payload = {
+        runs: gameState.runs,
+        wickets: gameState.wickets,
+        totalLegalBalls: gameState.totalLegalBalls,
+        currentTeam1: gameState.currentTeam1,
+        currentTeam2: gameState.currentTeam2,
+        currentInnings: gameState.currentInnings,
+        matchMaxOvers: gameState.matchMaxOvers,
+        targetRuns: gameState.targetRuns,
+        striker: gameState.striker,
+        nonStriker: gameState.nonStriker,
+        bowler: gameState.bowler,
+        currentOverBalls: gameState.currentOverBalls,
+        dismissals: gameState.dismissals,
+        potmData: gameState.potmData,
+        isMatchOver: gameState.isMatchOver,
+        innings1Snapshot: gameState.innings1Snapshot
+      };
 
-      var shareUrl = baseUrl + "?match=" + (hostPeerId || "online");
-      document.getElementById("spectator-link-input").value = shareUrl;
+      var compressed = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
 
+      // 2. Build live URL pointing to your hosted web app
+      var baseUrl = window.location.href.split("?")[0];
+      if (baseUrl.startsWith("file://")) {
+        baseUrl = "https://hemprasad17.github.io/FASTX/";
+      }
+
+      var fullUrl = baseUrl + "?live=" + compressed;
+      document.getElementById("spectator-link-input").value = fullUrl;
+
+      // 3. Render clean QR Code Image
       var qrBox = document.getElementById("qr-box-target");
-      qrBox.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(shareUrl)}" width="180" height="180" alt="Spectator QR Code" style="display:block; border-radius:6px;" />`;
+      qrBox.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(fullUrl)}" width="180" height="180" alt="Spectator QR Code" style="display:block; border-radius:6px;" />`;
 
       document.getElementById("spectator-modal").style.display = "flex";
     }
@@ -822,11 +807,12 @@
       var inp = document.getElementById("spectator-link-input");
       inp.select();
       navigator.clipboard.writeText(inp.value).then(function() {
-        alert("Spectator match link copied to clipboard!");
+        alert("Spectator link copied! Send it via WhatsApp to your friends.");
       });
     }
 
     function enableSpectatorMode() {
+      isSpectatorMode = true;
       document.getElementById("spectator-live-banner").style.display = "flex";
       document.getElementById("scorer-keypad-panel").style.display = "none";
       document.getElementById("header-new-btn").style.display = "none";
@@ -844,9 +830,9 @@
     }
 
     function exitSpectatorMode() {
-      var url = window.location.origin + window.location.pathname;
-      window.history.replaceState({}, document.title, url);
-      location.reload();
+      isSpectatorMode = false;
+      var cleanUrl = window.location.href.split("?")[0];
+      window.location.href = cleanUrl;
     }
 
     function switchMainView(viewId, btn) {
@@ -2385,6 +2371,7 @@
       var pName = (gameState.userProfile && gameState.userProfile.name) ? gameState.userProfile.name : "Hem Prasad";
       document.getElementById("profile-name-input").value = pName;
       document.getElementById("modal-profile-avatar").textContent = pName.charAt(0).toUpperCase();
+      document.getElementById("prof-matches-count").textContent = (gameState.savedMatchesArchive || []).length;
       document.getElementById("profile-modal").style.display = "flex";
     }
 
@@ -2485,7 +2472,7 @@
     loadFromStorage();
     renderAll();
     renderHomeHub();
-    initPeerNetwork();
+    checkSpectatorUrlParameter();
   </script>
 </body>
 </html>
