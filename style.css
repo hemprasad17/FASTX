@@ -33,7 +33,7 @@ body {
 header {
   background: linear-gradient(180deg, #0d1629 0%, #0a0f1d 100%);
   border-bottom: 1px solid var(--panel-border);
-  padding: 16px;
+  padding: 14px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -58,29 +58,35 @@ header {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(30, 41, 59, 0.6);
-  border: 1px solid var(--panel-border);
-  padding: 4px 10px;
+  background: rgba(30, 41, 59, 0.7);
+  border: 1.5px solid var(--panel-border);
+  padding: 5px 12px;
   border-radius: 9999px;
   cursor: pointer;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 700;
+  transition: all 0.15s ease;
+}
+
+.profile-pill-badge:hover {
+  border-color: var(--accent-cyan);
+  background: rgba(6, 182, 212, 0.15);
 }
 
 .profile-avatar-circle {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   background: var(--accent-cyan);
   color: #090d16;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 800;
 }
 
-/* Switch */
+/* Switch & Controls */
 .switch {
   position: relative;
   display: inline-block;
@@ -109,14 +115,14 @@ input:checked + .slider:before { transform: translateX(18px); }
 /* Main Container */
 main {
   max-width: 960px;
-  margin: 16px auto;
+  margin: 14px auto;
   padding: 0 14px;
   display: flex;
   flex-direction: column;
   gap: 18px;
 }
 
-/* Navigation Tabs */
+/* Nav Tabs */
 .nav-tab-strip {
   display: flex;
   gap: 8px;
@@ -214,6 +220,84 @@ main {
   margin-top: 4px;
 }
 
+/* Career Dossier & Profile */
+.career-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.career-hero-card {
+  background: linear-gradient(135deg, #16223b 0%, #0d1527 100%);
+  border: 1.5px solid var(--panel-border);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.career-avatar-badge {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, var(--accent-cyan), #0284c7);
+  color: #04101c;
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
+}
+
+.stat-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.stat-metric-card {
+  background: #141f36;
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+}
+
+.stat-metric-val {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.stat-metric-lbl {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.team-analysis-select {
+  background: #141f36;
+  border: 1.5px solid var(--panel-border);
+  color: #fff;
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 8px;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
 /* Scoreboard Card */
 .section-badge {
   font-family: 'Chakra Petch', sans-serif;
@@ -302,23 +386,6 @@ main {
   font-size: 0.88rem;
 }
 
-/* Spectator Ribbon */
-.spectator-banner {
-  background: linear-gradient(90deg, #10b981 0%, #06b6d4 100%);
-  color: #04101c;
-  font-family: 'Chakra Petch', sans-serif;
-  font-size: 0.8rem;
-  font-weight: 800;
-  letter-spacing: 1px;
-  padding: 8px 14px;
-  border-radius: 8px;
-  margin-bottom: 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-/* Over Strip */
 .over-strip-container {
   display: flex;
   align-items: center;
@@ -366,7 +433,6 @@ main {
 .ball-circle.wicket { background: #dc2626; border-color: #ef4444; }
 .ball-circle.extra { background: #d97706; border-color: #f59e0b; color: #000; }
 
-/* Match Tables */
 .stats-container {
   display: flex;
   flex-direction: column;
@@ -422,7 +488,6 @@ main {
   text-decoration: underline;
 }
 
-/* Quota Pill */
 .quota-tag {
   font-family: 'Chakra Petch', sans-serif;
   font-size: 0.72rem;
@@ -442,7 +507,6 @@ main {
   border-color: #ef4444;
 }
 
-/* Wicket Dismissal Grid */
 .wicket-option-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -459,7 +523,6 @@ main {
   margin-top: 10px;
 }
 
-/* Keypad Controls */
 .score-controls {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -517,7 +580,6 @@ main {
   cursor: pointer;
 }
 
-/* Modals */
 .modal-overlay {
   display: none;
   position: fixed;
@@ -575,29 +637,6 @@ main {
 
 .close-btn:hover { background: #ef4444; color: #fff; }
 
-/* QR Container */
-.qr-container-box {
-  background: #fff;
-  padding: 14px;
-  border-radius: 12px;
-  display: inline-block;
-  margin: 12px auto;
-  box-shadow: 0 0 20px rgba(6, 182, 212, 0.35);
-}
-
-.qr-link-input {
-  width: 100%;
-  background: #0f172a;
-  border: 1px solid var(--panel-border);
-  color: #cbd5e1;
-  font-size: 0.8rem;
-  padding: 8px 10px;
-  border-radius: 8px;
-  margin-top: 10px;
-  text-align: center;
-}
-
-/* Wizard */
 .wizard-step-container {
   display: flex;
   flex-direction: column;
@@ -696,8 +735,13 @@ main {
   font-family: 'Chakra Petch', sans-serif;
   font-size: 0.9rem;
   font-weight: 700;
-  padding: 8px 12px;
+  padding: 10px 12px;
   border-radius: 8px;
+  outline: none;
+}
+
+.custom-team-input:focus {
+  border-color: var(--accent-cyan);
 }
 
 .squad-chip-grid {
@@ -889,17 +933,6 @@ main {
 .tag-series { background: rgba(59, 130, 246, 0.25); color: #60a5fa; border: 1px solid #3b82f6; }
 .tag-tournament { background: rgba(245, 158, 11, 0.25); color: #fbbf24; border: 1px solid #f59e0b; }
 
-.series-banner-card {
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.15), rgba(15, 23, 42, 0.6));
-  border: 1px solid rgba(59, 130, 246, 0.4);
-  border-radius: 10px;
-  padding: 10px 14px;
-  margin-bottom: 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
 .history-card-item, .fixture-row {
   background: #16223b;
   border: 1px solid var(--panel-border);
@@ -939,14 +972,6 @@ main {
   padding: 6px 0;
   border-bottom: 1px solid rgba(30, 46, 79, 0.4);
   font-size: 0.82rem;
-}
-
-.chart-box {
-  background: #0d1527;
-  border: 1px solid var(--panel-border);
-  border-radius: 8px;
-  padding: 8px;
-  text-align: center;
 }
 
 .timeline-card-row, .settings-row {
